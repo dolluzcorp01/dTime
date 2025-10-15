@@ -8,14 +8,16 @@ function getDBConnection(database) {
     if (!pools[database]) {
         pools[database] = mysql.createPool({
             connectionLimit: 100,  // Increase if needed
-            host: '127.0.0.1',
-            user: 'root',
-            password: 'pavithran@123',
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
             database: database,  // ✅ Use the actual database name
             waitForConnections: true,
             queueLimit: 1000, // Limit waiting queries
             multipleStatements: true,
         });
+
+        console.log(`🔗 Created new connection pool for database: ${database}`);
     }
     return pools[database];
 }

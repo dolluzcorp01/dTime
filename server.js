@@ -17,10 +17,12 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser());
 
 // Routes
- const LoginRoutes = require('./src/backend_routes/Login_server');
- 
- app.use("/api/login", LoginRoutes);
-  
+const LoginRoutes = require('./src/backend_routes/Login_server');
+const EmployeeRoutes = require('./src/backend_routes/Employee_server');
+
+app.use("/api/login", LoginRoutes);
+app.use("/api/employee", EmployeeRoutes);
+
 app.listen(port, () => {
     console.log(`🚀 Server running at http://localhost:${port}`);
 });

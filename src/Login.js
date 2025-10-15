@@ -51,7 +51,7 @@ function Login() {
 
         setLoading(true);
         try {
-            const res = await apiFetch("/api/login/login", {
+            const res = await apiFetch("/api/login/Verifylogin", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password }),

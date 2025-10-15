@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
-import "./Header.css";
-import { FaUserCircle, FaClock } from "react-icons/fa";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import { FaUserCircle, FaClock, FaCamera } from "react-icons/fa";
+import { apiFetch, EMP_PROFILE_FILE_BASE } from "./utils/api";
 import logo_eagle from "./assets/img/logo_eagle.png";
+import "./Header.css";
 
 function Header() {
     const [isPunchedIn, setIsPunchedIn] = useState(false);
@@ -9,6 +12,57 @@ function Header() {
     const [history, setHistory] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [startTime, setStartTime] = useState(null);
+    const [loggedInEmp, setLoggedInEmp] = useState(null);
+    const [employees, setEmployees] = useState([]);
+    const [empId, setEmpId] = useState(null);
+    const [showEmpMenu, setShowEmpMenu] = useState(false);
+    const [isDropdownHovered, setIsDropdownHovered] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const modalRef = useRef(null);
+    const fileInputRef = useRef(null);
+    const navigate = useNavigate();
+
+    function stringToColor(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        let color = "#";
+        for (let i = 0; i < 3; i++) {
+            const value = (hash >> (i * 8)) & 0xff;
+            color += ("00" + value.toString(16)).slice(-2);
+        }
+        return color;
+    }
+
+    useEffect(() => {
+        const id = localStorage.getItem("emp_id");
+        setEmpId(id);
+    }, []);
+
+    useEffect(() => {
+        const fetchEmployees = async () => {
+            try {
+                const res = await apiFetch("/api/employee/all");
+                const data = await res.json();
+                setEmployees(data);
+            } catch (err) {
+                console.error("Error fetching employees:", err);
+            }
+        };
+
+        fetchEmployees();
+    }, []);
+
+    useEffect(() => {
+        if (empId && employees.length > 0) {
+            const emp = employees.find(e => e.emp_id == empId);
+            if (emp) {
+                setLoggedInEmp(emp);
+            }
+        }
+    }, [empId, employees]);
 
     useEffect(() => {
         let interval = null;
@@ -42,6 +96,83 @@ function Header() {
         }
     };
 
+    const MAX_FILE_SIZE = 0.5 * 1024 * 1024; // 0.5 MB in bytes
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // ✅ Check file size
+        if (file.size > MAX_FILE_SIZE) {
+            Swal.fire({
+                icon: "warning",
+                title: "File Too Large",
+                text: "Please select an image smaller than 0.5 MB.",
+            });
+            // Reset selected file and input
+            setSelectedFile(null);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+            return;
+        }
+
+        setSelectedFile(file);
+    };
+
+    const handleSaveProfileImage = async () => {
+        if (!selectedFile) {
+            Swal.fire({
+                icon: "warning",
+                title: "No File Selected",
+                text: "Please select a profile image before saving.",
+            });
+            return;
+        }
+
+        // ✅ Optional: double-check file size before sending
+        if (selectedFile.size > MAX_FILE_SIZE) {
+            Swal.fire({
+                icon: "warning",
+                title: "File Too Large",
+                text: "Please select an image smaller than 0.5 MB.",
+            });
+            return;
+        }
+
+        const formDataToSend = new FormData();
+        formDataToSend.append("profile", selectedFile);
+
+        try {
+            const res = await apiFetch(`/api/employee/upload-profile/${empId}`, {
+                method: "POST",
+                body: formDataToSend,
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Failed to upload profile image");
+
+            Swal.fire({
+                icon: "success",
+                title: "Profile Updated",
+                text: "Your profile image has been updated successfully!",
+            });
+
+            // Update logged in user state
+            setLoggedInEmp(prev => ({ ...prev, emp_profile_img: data.profilePath }));
+
+            // Reset file input
+            setSelectedFile(null);
+            if (fileInputRef.current) fileInputRef.current.value = null;
+
+        } catch (err) {
+            Swal.fire({
+                icon: "error",
+                title: "Upload Error",
+                text: err.message,
+            });
+        }
+    };
+
     return (
         <header className="app-header">
             <div className="header-left">
@@ -51,7 +182,6 @@ function Header() {
                 <h2>dTime</h2>
             </div>
 
-            {/* ✅ Center Controls */}
             <div className="header-center">
 
                 <button
@@ -73,10 +203,182 @@ function Header() {
 
             </div>
 
-            {/* ✅ Right Section */}
             <div className="header-right">
-                <span className="user-name">Welcome, Employee</span>
-                <FaUserCircle className="user-icon" />
+                {loggedInEmp ? (
+                    <>
+                        <span className="user-name">
+                            Welcome, {loggedInEmp.emp_first_name} {loggedInEmp.emp_last_name}
+                        </span>
+                        <div
+                            className="emp-circle"
+                            onClick={() => setShowEmpMenu(!showEmpMenu)}
+                            style={{
+                                backgroundColor: loggedInEmp.emp_profile_img ? "transparent" : stringToColor(loggedInEmp.emp_first_name + " " + loggedInEmp.emp_last_name),
+                                color: "#fff",
+                                fontWeight: "bold",
+                                fontSize: "16px",
+                                width: "30px",
+                                height: "30px",
+                                borderRadius: "50%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                cursor: "pointer",
+                                overflow: "hidden",
+                            }}
+                        >
+                            {loggedInEmp.emp_profile_img ? (
+                                <img
+                                    src={`${EMP_PROFILE_FILE_BASE}/${loggedInEmp.emp_profile_img.replace(/\\/g, "/")}`}
+                                    alt="Profile"
+                                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                />
+                            ) : (
+                                loggedInEmp.emp_first_name.charAt(0).toUpperCase() + loggedInEmp.emp_last_name.charAt(0).toUpperCase()
+                            )}
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <span className="user-name">Welcome, Employee</span>
+                        <FaUserCircle className="user-icon" />
+                    </>
+                )}
+
+                {showEmpMenu && (
+                    <div className="emp-dropdown">
+                        {/* Profile Info */}
+                        <div className="emp-profile">
+                            <div
+                                className="emp-profile-circle"
+                                style={{
+                                    backgroundColor: loggedInEmp.emp_profile_img ? "transparent" : stringToColor(loggedInEmp.emp_first_name + " " + loggedInEmp.emp_last_name),
+                                    color: "#fff",
+                                    fontWeight: "bold",
+                                    fontSize: "18px",
+                                    width: "40px",
+                                    height: "40px",
+                                    borderRadius: "50%",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    cursor: "pointer",
+                                    overflow: "hidden",
+                                }}
+                                onMouseEnter={() => setIsDropdownHovered(true)}
+                                onMouseLeave={() => setIsDropdownHovered(false)}
+                                onClick={() => setIsModalOpen(true)}
+                            >
+                                {loggedInEmp.emp_profile_img ? (
+                                    <img
+                                        src={`${EMP_PROFILE_FILE_BASE}/${loggedInEmp.emp_profile_img.replace(/\\/g, "/")}`}
+                                        alt="Profile"
+                                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                    />
+                                ) : (
+                                    isDropdownHovered ? <FaCamera color="white" /> : loggedInEmp.emp_first_name.charAt(0).toUpperCase() + loggedInEmp.emp_last_name.charAt(0).toUpperCase()
+                                )}
+                            </div>
+
+                            <div className="emp-profile-text">
+                                <div className="emp-name">{loggedInEmp.emp_first_name + " " + loggedInEmp.emp_last_name}</div>
+                                <div className="emp-org" style={{ fontStyle: "italic", whiteSpace: "nowrap" }}>
+                                    One Place. One start. One Team.
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Dropdown actions */}
+                        <button
+                            onClick={() => navigate('/login?changePassword')}
+                            className="emp-dropdown-btn"
+                        >
+                            Change Password
+                        </button>
+                        <button
+                            onClick={() => {
+                                localStorage.clear();
+                                window.location.reload();
+                            }}
+                            className="emp-dropdown-btn logout-btn"
+                        >
+                            Logout
+                        </button>
+                    </div>
+                )}
+
+                {isModalOpen && (
+                    <div className="profile-modal-overlay">
+                        <div className="profile-modal" ref={modalRef}>
+                            <button
+                                className="profile-modal-close"
+                                onClick={() => setIsModalOpen(false)}
+                            >
+                                ✖
+                            </button>
+
+                            <h3 className="profile-modal-title">Update Profile Image</h3>
+
+                            <div style={{ display: 'flex', justifyContent: 'center', margin: '20px 0' }}>
+                                {selectedFile ? (
+                                    <img
+                                        src={URL.createObjectURL(selectedFile)}
+                                        alt="Preview"
+                                        className="profile-image-preview"
+                                    />
+                                ) : (
+                                    <FaCamera size={60} color="#555" />
+                                )}
+                            </div>
+
+                            <div style={{ position: "relative", width: "100%" }}>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    style={{ width: "100%", paddingRight: selectedFile ? "30px" : "0" }}
+                                />
+
+                                {selectedFile && (
+                                    <span
+                                        onClick={() => {
+                                            setSelectedFile(null);
+                                            if (fileInputRef.current) {
+                                                fileInputRef.current.value = "";
+                                            }
+                                        }}
+                                        style={{
+                                            position: "absolute",
+                                            right: "8px",
+                                            top: "50%",
+                                            transform: "translateY(-50%)",
+                                            cursor: "pointer",
+                                            fontSize: "16px",
+                                            color: "#888",
+                                        }}
+                                    >
+                                        ✖
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="profile-modal-buttons">
+                                <button
+                                    className="profile-modal-save"
+                                    onClick={handleSaveProfileImage}
+                                    disabled={!selectedFile}
+                                    style={{
+                                        cursor: selectedFile ? "pointer" : "not-allowed",
+                                        opacity: selectedFile ? 1 : 0.5
+                                    }}
+                                >
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {showModal && (

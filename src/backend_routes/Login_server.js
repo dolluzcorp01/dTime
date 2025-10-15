@@ -1,4 +1,4 @@
-
+require("dotenv").config();
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const getDBConnection = require('../../config/db');
@@ -6,9 +6,8 @@ const router = express.Router();
 const nodemailer = require("nodemailer");
 const db = getDBConnection("dadmin");
 
-
 // 🔹 LOGIN (with bcrypt verification)
-router.post("/login", (req, res) => {
+router.post("/Verifylogin", (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
