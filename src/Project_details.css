@@ -1,0 +1,22 @@
+.project-details-container {
+    display: flex;
+}
+
+.content-area {
+    margin-top: 60px;
+    padding: 20px;
+    transition: margin-left 0.3s ease;
+    flex-grow: 1;
+}
+
+.content-area.full {
+    margin-left: 220px;
+}
+
+.content-area.icon-only {
+    margin-left: 50px;
+}
+
+.content-area.hidden {
+    margin-left: 10px;
+}
