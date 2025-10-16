@@ -246,7 +246,7 @@ function Header() {
                 <a className="navbar-brand" href="#" style={{ marginRight: "10px", marginLeft: "10px" }}>
                     <img src={logo_eagle} alt="dTime Logo" />
                 </a>
-                <h2>dTime</h2>
+                <h2 style={{ color: "white" }}>dTime</h2>
             </div>
 
             <div className="header-center">

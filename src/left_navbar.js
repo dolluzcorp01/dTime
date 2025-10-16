@@ -82,6 +82,14 @@ function LeftNavbar({ navSize, setNavSize }) {
                             {navSize === "full" && "Leave Management"}
                         </NavLink>
                     </li>
+
+                    {/* Configuration (Placeholder for now) */}
+                    <li>
+                        <NavLink to="/Configuration" className={({ isActive }) => isActive ? "active" : ""}>
+                            <i class="fa-solid fa-gears nav-icon"></i>
+                            {navSize === "full" && "Configuration"}
+                        </NavLink>
+                    </li>
                 </ul>
             )}
 

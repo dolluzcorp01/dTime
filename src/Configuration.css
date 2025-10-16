@@ -1,0 +1,165 @@
+.project-details-container {
+    display: flex;
+    font-family: "Inter", sans-serif;
+    color: #1f2937;
+    background: #f9fafb;
+    min-height: 100vh;
+}
+
+.content-area {
+    margin-top: 70px;
+    padding: 30px 40px;
+    flex-grow: 1;
+    transition: margin-left 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.content-area.full {
+    margin-left: 220px;
+}
+
+.content-area.icon-only {
+    margin-left: 70px;
+}
+
+h1,
+h2 {
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 20px;
+}
+
+.add-project {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 25px;
+}
+
+.add-project input {
+    padding: 10px 14px;
+    width: 280px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+    transition: border 0.2s ease;
+}
+
+.add-project input:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
+.add-project button {
+    padding: 10px 18px;
+    background: #10b981;
+    color: #fff;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.add-project button:hover {
+    background: #059669;
+}
+
+.project-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    margin-bottom: 40px;
+}
+
+.project-table thead {
+    background: #1f2937;
+    color: white;
+    text-align: left;
+}
+
+.project-table th,
+.project-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+}
+
+.project-table th {
+    font-weight: 600;
+}
+
+.project-table tr:last-child td {
+    border-bottom: none;
+}
+
+.project-table tr:hover {
+    background-color: #f3f4f6;
+}
+
+.selected-row {
+    background-color: #dbeafe !important;
+    font-weight: 600;
+}
+
+.project-table button {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.project-table button:first-of-type {
+    background: #3b82f6;
+    color: white;
+}
+
+.project-table button:first-of-type:hover {
+    background: #2563eb;
+}
+
+.project-table button:last-of-type {
+    background: #ef4444;
+    color: white;
+}
+
+.project-table button:last-of-type:hover {
+    background: #dc2626;
+}
+
+.task-section {
+    width: 100%;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    padding: 25px 30px;
+    margin-top: 20px;
+}
+
+.task-section h2 {
+    margin-bottom: 20px;
+}
+
+.task-section .add-project {
+    margin-bottom: 25px;
+}
+
+.project-table button {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-right: 8px;
+}

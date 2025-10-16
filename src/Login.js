@@ -67,7 +67,7 @@ function Login() {
             showToast("Login Successful! Redirecting...");
 
             setTimeout(() => {
-                navigate("/Project_details");
+                navigate("/Configuration");
             }, 1800);
         } catch (err) {
             Swal.fire({
