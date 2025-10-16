@@ -19,9 +19,11 @@ app.use(cookieParser());
 // Routes
 const LoginRoutes = require('./src/backend_routes/Login_server');
 const EmployeeRoutes = require('./src/backend_routes/Employee_server');
+const PunchRoutes = require('./src/backend_routes/Punch_server');
 
 app.use("/api/login", LoginRoutes);
 app.use("/api/employee", EmployeeRoutes);
+app.use("/api/punch", PunchRoutes);
 
 app.listen(port, () => {
     console.log(`🚀 Server running at http://localhost:${port}`);

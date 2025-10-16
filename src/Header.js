@@ -60,6 +60,7 @@ function Header() {
             const emp = employees.find(e => e.emp_id == empId);
             if (emp) {
                 setLoggedInEmp(emp);
+                fetchPunchHistory();
             }
         }
     }, [empId, employees]);
@@ -83,16 +84,82 @@ function Header() {
         return `${h}:${m}:${s}`;
     };
 
-    const handlePunch = () => {
+    const fetchPunchHistory = async () => {
+        try {
+            const res = await apiFetch(`/api/punch/history/${empId}`);
+            const data = await res.json();
+            console.log(data);
+
+            // Group data by date (e.g., "Monday (16-10-2025)")
+            const grouped = {};
+
+            data.forEach(entry => {
+                const dateObj = new Date(entry.punch_in);
+                const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+                const dateFormatted = dateObj.toLocaleDateString('en-GB'); // dd/mm/yyyy
+                const key = `${dayName} (${dateFormatted})`;
+
+                if (!grouped[key]) grouped[key] = [];
+
+                grouped[key].push({
+                    start: new Date(entry.punch_in).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    end: entry.punch_out
+                        ? new Date(entry.punch_out).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        : "—",
+                    duration: entry.punch_out
+                        ? formatTime(Math.floor((new Date(entry.punch_out) - new Date(entry.punch_in)) / 1000))
+                        : "—"
+                });
+            });
+
+            setHistory(grouped);
+        } catch (err) {
+            console.error("Error fetching punch history:", err);
+        }
+    };
+
+    const handlePunch = async () => {
         if (!isPunchedIn) {
-            setIsPunchedIn(true);
-            setStartTime(new Date().toLocaleTimeString());
+            // Punch In ✅
+            const res = await apiFetch("/api/punch/punch-in", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ emp_id: empId })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                setIsPunchedIn(true);
+                setStartTime(new Date().toLocaleTimeString());
+                console.log("Punched In");
+            }
         } else {
-            setIsPunchedIn(false);
-            const recordedTime = formatTime(seconds);
-            console.log("Work Duration:", recordedTime);
-            setHistory([...history, { start: startTime, end: new Date().toLocaleTimeString(), duration: recordedTime }]);
-            setSeconds(0);
+            // Punch Out ✅
+            const res = await apiFetch("/api/punch/punch-out", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ emp_id: empId })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                setIsPunchedIn(false);
+                const recordedTime = formatTime(seconds);
+                console.log("Work Duration:", recordedTime);
+                setHistory([
+                    ...history,
+                    {
+                        start: startTime,
+                        end: new Date().toLocaleTimeString(),
+                        duration: recordedTime
+                    }
+                ]);
+                setSeconds(0);
+            }
         }
     };
 
@@ -197,8 +264,10 @@ function Header() {
                     <span className="timer">00:00:00</span>
                 )}
 
-                {history.length > 0 && (
-                    <FaClock className="clock-icon" onClick={() => setShowModal(true)} style={{ cursor: "pointer", fontSize: "20px" }} />
+                {Object.keys(history).length > 0 && (
+                    <FaClock className="clock-icon"
+                        onClick={() => setShowModal(true)}
+                        style={{ cursor: "pointer", fontSize: "20px" }} />
                 )}
 
             </div>
@@ -382,20 +451,23 @@ function Header() {
             </div>
 
             {showModal && (
-                <div className="modal">
-                    <div className="modal-content">
+                <div className="modal" onClick={() => setShowModal(false)}>
+                    <div className="modal-body" onClick={(e) => e.stopPropagation()}>
                         <h3>Punch History</h3>
-                        <ul>
-                            {history.map((entry, index) => (
-                                <li key={index}>
-                                    In: {entry.start} | Out: {entry.end} | Duration: {entry.duration}
-                                </li>
-                            ))}
-                        </ul>
+                        {Object.keys(history).length === 0 ? (
+                            <p>No history found.</p>
+                        ) : (Object.keys(history).map((dateKey, idx) => (
+                            <div key={idx} className="modal-content">
+                                <strong>{dateKey}</strong>
+                                <ul> {history[dateKey].map((entry, i) => (
+                                    <li key={i}> Punch In: {entry.start} | Punch Out: {entry.end} | Duration: {entry.duration} </li>))}
+                                </ul>
+                            </div>)))}
                         <button onClick={() => setShowModal(false)}>Close</button>
                     </div>
                 </div>
             )}
+
         </header>
     );
 }
