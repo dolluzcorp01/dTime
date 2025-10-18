@@ -69,8 +69,6 @@ router.delete("/delete/:auto_id", (req, res) => {
     });
 });
 
-// ===== Task Details CRUD =====
-
 // Get all tasks for a project
 router.get("/tasks/:project_id", (req, res) => {
     const { project_id } = req.params;
@@ -85,16 +83,27 @@ router.get("/tasks/:project_id", (req, res) => {
     });
 });
 
-// Insert Task
+// Insert Task with Auto Task ID
 router.post("/tasks/add", (req, res) => {
     const { project_id, task_desc, created_by } = req.body;
-    const query = `
-        INSERT INTO task_details (project_id, task_desc, created_by)
-        VALUES (?, ?, ?)
-    `;
-    db.query(query, [project_id, task_desc, created_by], (err, result) => {
+
+    // Step 1: Get last auto_id from task_details to calculate next task ID
+    db.query(`SELECT auto_id FROM task_details ORDER BY auto_id DESC LIMIT 1`, (err, result) => {
         if (err) return res.status(500).json({ error: err });
-        res.json({ success: true, auto_id: result.insertId });
+
+        const nextId = result.length > 0 ? result[0].auto_id + 1 : 1;
+        const task_id = `TSK-${String(nextId).padStart(4, '0')}`; // Format: TSK-0001
+
+        // Step 2: Insert with auto-generated task_id
+        const query = `
+            INSERT INTO task_details (task_id, project_id, task_desc, created_by)
+            VALUES (?, ?, ?, ?)
+        `;
+
+        db.query(query, [task_id, project_id, task_desc, created_by], (err2, result2) => {
+            if (err2) return res.status(500).json({ error: err2 });
+            res.json({ success: true, auto_id: result2.insertId, task_id });
+        });
     });
 });
 

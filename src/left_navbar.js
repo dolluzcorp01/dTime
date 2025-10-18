@@ -66,7 +66,7 @@ function LeftNavbar({ navSize, setNavSize }) {
                                     </NavLink>
                                 </li>
                                 <li>
-                                    <NavLink to="/timesheet-entry" className={({ isActive }) => isActive ? "active" : ""}>
+                                    <NavLink to="/Timesheet_entry" className={({ isActive }) => isActive ? "active" : ""}>
                                         <FaChevronRight className="nav-icon" />   {/* ✅ Icon added */}
                                         {navSize === "full" && "Timesheet Entry"}
                                     </NavLink>
@@ -86,7 +86,7 @@ function LeftNavbar({ navSize, setNavSize }) {
                     {/* Configuration (Placeholder for now) */}
                     <li>
                         <NavLink to="/Configuration" className={({ isActive }) => isActive ? "active" : ""}>
-                            <i class="fa-solid fa-gears nav-icon"></i>
+                            <i className="fa-solid fa-gears nav-icon"></i>
                             {navSize === "full" && "Configuration"}
                         </NavLink>
                     </li>

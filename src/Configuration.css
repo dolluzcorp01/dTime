@@ -1,13 +1,16 @@
 .project-details-container {
     display: flex;
-    font-family: "Inter", sans-serif;
-    color: #1f2937;
-    background: #f9fafb;
     min-height: 100vh;
 }
 
-.content-area {
-    margin-top: 70px;
+.project-details-wrapper {
+    flex: 1;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f6f8;
+    overflow-x: hidden;
+    border-radius: 12px;
+    color: #1f2937;
+    margin-top: 60px;
     padding: 30px 40px;
     flex-grow: 1;
     transition: margin-left 0.3s ease;
@@ -16,16 +19,21 @@
     align-items: flex-start;
 }
 
-.content-area.full {
+/* Sidebar stays fixed */
+.left-navbar {
+    flex-shrink: 0;
+}
+
+.project-details-wrapper.full {
     margin-left: 220px;
 }
 
-.content-area.icon-only {
-    margin-left: 70px;
+.project-details-wrapper.icon-only {
+    margin-left: 50px;
 }
 
-h1,
-h2 {
+.project-details-wrapper h1,
+.task-section h2 {
     font-weight: 600;
     color: #111827;
     margin-bottom: 20px;

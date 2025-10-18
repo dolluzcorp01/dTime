@@ -1,0 +1,178 @@
+.timesheet-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.timesheet-wrapper {
+    flex: 1;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f6f8;
+    overflow-x: hidden;
+    border-radius: 12px;
+    color: #1f2937;
+    margin-top: 60px;
+    padding: 30px 40px;
+    flex-grow: 1;
+    transition: margin-left 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* Sidebar stays fixed */
+.left-navbar {
+    flex-shrink: 0;
+}
+
+.timesheet-wrapper.full {
+    margin-left: 220px;
+}
+
+.timesheet-wrapper.icon-only {
+    margin-left: 50px;
+}
+
+.timesheet-wrapper h1 {
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 30px;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: block;
+}
+
+.timesheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    margin-bottom: 40px;
+}
+
+.timesheet-table th {
+    background: #0095d9;
+    color: white;
+    padding: 10px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+    max-width: 100px;
+}
+
+.timesheet-table th:nth-child(1) {
+    min-width: 120px;
+}
+
+/* Project ID */
+.timesheet-table th:nth-child(2) {
+    min-width: 180px;
+}
+
+/* Project Name */
+.timesheet-table th:nth-child(3) {
+    min-width: 160px;
+}
+
+/* Task/Activity ID */
+.timesheet-table th:nth-child(4) {
+    min-width: 200px;
+}
+
+/* Task Description */
+.timesheet-table th:nth-child(5) {
+    min-width: 140px;
+}
+
+/* Onsite/Offshore */
+.timesheet-table th:nth-child(6) {
+    min-width: 140px;
+}
+
+/* Client Billable */
+.timesheet-table th:nth-child(7) {
+    min-width: 150px;
+}
+
+/* Billing Location */
+
+.timesheet-table th:nth-child(n+8):nth-child(-n+14) {
+    min-width: 80px;
+    text-align: center;
+}
+
+/* MON-SUN */
+.timesheet-table th:nth-child(15) {
+    min-width: 100px;
+    text-align: center;
+}
+
+/* Total Hours */
+.timesheet-table th:nth-child(16) {
+    min-width: 180px;
+}
+
+.small-input {
+    width: 40px;
+    text-align: center;
+    padding: 4px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+}
+
+.holiday-row td {
+    background: #f8f9fa;
+}
+
+.timesheet-table td {
+    padding: 10px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.timesheet-table select,
+.timesheet-table input {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #f9fafb;
+}
+
+.timesheet-table input[readonly] {
+    background: #f3f4f6;
+}
+
+.punch-row td {
+    background: #e7f3ff;
+}
+
+.comment-icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    /* Space between icons */
+}
+
+.icon {
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.comment-icon {
+    color: rgb(16, 228, 16);
+}
+
+.add-icon {
+    color: #4090e5;
+}
+
+.remove-icon {
+    color: rgb(247, 49, 49);
+}

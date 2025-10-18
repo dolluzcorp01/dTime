@@ -150,8 +150,7 @@ function Configuration() {
         <div className="project-details-container">
             <LeftNavbar navSize={navSize} setNavSize={setNavSize} />
             <Header />
-
-            <div className={`content-area ${navSize}`}>
+            <div className={`project-details-wrapper ${navSize}`}>
                 {/* PROJECT SECTION */}
                 <h1>Project Details</h1>
 
@@ -237,6 +236,7 @@ function Configuration() {
                         <table className="project-table">
                             <thead>
                                 <tr>
+                                    <th>Task ID</th>
                                     <th>Task Description</th>
                                     <th>Created By</th>
                                     <th>Created Time</th>
@@ -247,6 +247,7 @@ function Configuration() {
                                 {Array.isArray(tasks) && tasks.length > 0 ? (
                                     tasks.map((task) => (
                                         <tr key={task.auto_id}>
+                                            <td>{task.task_id}</td>
                                             <td>
                                                 {editTask?.auto_id === task.auto_id ? (
                                                     <input

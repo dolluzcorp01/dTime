@@ -88,7 +88,6 @@ function Header() {
         try {
             const res = await apiFetch(`/api/punch/history/${empId}`);
             const data = await res.json();
-            console.log(data);
 
             // Group data by date (e.g., "Monday (16-10-2025)")
             const grouped = {};
@@ -120,44 +119,43 @@ function Header() {
 
     const handlePunch = async () => {
         if (!isPunchedIn) {
-            // Punch In ✅
+            // Punch In
             const res = await apiFetch("/api/punch/punch-in", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ emp_id: empId })
             });
-
             const data = await res.json();
             if (data.success) {
                 setIsPunchedIn(true);
                 setStartTime(new Date().toLocaleTimeString());
-                console.log("Punched In");
             }
         } else {
-            // Punch Out ✅
+            // Punch Out
             const res = await apiFetch("/api/punch/punch-out", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ emp_id: empId })
             });
-
             const data = await res.json();
             if (data.success) {
                 setIsPunchedIn(false);
                 const recordedTime = formatTime(seconds);
-                console.log("Work Duration:", recordedTime);
-                setHistory([
-                    ...history,
-                    {
-                        start: startTime,
-                        end: new Date().toLocaleTimeString(),
-                        duration: recordedTime
-                    }
-                ]);
+
+                // Get today key
+                const today = new Date();
+                const dayName = today.toLocaleDateString('en-US', { weekday: 'long' });
+                const dateFormatted = today.toLocaleDateString('en-GB'); // dd/mm/yyyy
+                const key = `${dayName} (${dateFormatted})`;
+
+                setHistory(prev => ({
+                    ...prev,
+                    [key]: [
+                        ...(prev[key] || []),
+                        { start: startTime, end: today.toLocaleTimeString(), duration: recordedTime }
+                    ]
+                }));
+
                 setSeconds(0);
             }
         }
