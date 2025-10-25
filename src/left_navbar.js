@@ -12,14 +12,15 @@ import {
     FaAngleRight,
     FaChevronDown,
     FaChevronUp,
-    FaChevronRight
+    FaChevronRight,
+    FaCalendarAlt
 } from "react-icons/fa";
 import logo_eagle from "./assets/img/logo_eagle.png";
 import "./left_navbar.css";
 
 function LeftNavbar({ navSize, setNavSize }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    const [isTimesheetOpen, setTimesheetOpen] = useState(false);
+    const [isTimesheetOpen, setTimesheetOpen] = useState(true);
 
     const handleNavSizeChange = (size) => {
         setNavSize(size);
@@ -30,7 +31,7 @@ function LeftNavbar({ navSize, setNavSize }) {
         <div className={`left-navbar ${navSize}`} style={{ '--navbar-width': navSize === 'full' ? '220px' : navSize === 'icon-only' ? '40px' : '10px' }}>
             <div className={`navbar-header ${navSize === "full" ? "full-view-header" : ""}`}>
                 {navSize !== "hidden" && (<h3>
-                    <a className="navbar-brand" href="#" style={{ marginRight: "10px", marginLeft: "30px" }}   >
+                    <a className="navbar-brand" href="#" style={{ marginRight: "10px", marginLeft: "30px" }}>
                         <img src={logo_eagle} alt="dTime Logo" className={`logo-img ${navSize}`} />
                     </a>
                     {navSize === "full" && "dTime"}
@@ -80,6 +81,14 @@ function LeftNavbar({ navSize, setNavSize }) {
                         <NavLink to="/leave-management" className={({ isActive }) => isActive ? "active" : ""}>
                             <FaCalendarTimes className="nav-icon" />
                             {navSize === "full" && "Leave Management"}
+                        </NavLink>
+                    </li>
+
+                    {/* Holiday (Placeholder for now) */}
+                    <li>
+                        <NavLink to="/Holiday" className={({ isActive }) => isActive ? "active" : ""}>
+                            <FaCalendarAlt className="nav-icon" />
+                            {navSize === "full" && "Holiday"}
                         </NavLink>
                     </li>
 

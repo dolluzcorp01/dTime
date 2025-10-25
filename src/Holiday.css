@@ -1,0 +1,168 @@
+.holiday-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.holiday-wrapper {
+    flex-grow: 1;
+    background: #f8f9fa;
+    padding: 30px 50px;
+    margin-top: 60px;
+    transition: margin-left 0.3s ease;
+}
+
+.holiday-wrapper.full {
+    margin-left: 220px;
+}
+
+.holiday-wrapper.icon-only {
+    margin-left: 60px;
+}
+
+h2 {
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    font-size: 2.2rem;
+    margin-bottom: 20px;
+}
+
+/* Calendar container */
+.calendar {
+    background: #ffffff;
+    color: #2c3e50;
+    border-radius: 14px;
+    padding: 25px;
+    height: auto;
+    overflow-y: visible;
+    padding-bottom: 10px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+/* Month centered properly */
+.month-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-align: center;
+    flex-grow: 1;
+}
+
+/* Month navigation */
+.month-btn {
+    background: #1f2937 !important;
+    color: #fff !important;
+    padding: 6px 18px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    width: 10%;
+}
+
+/* Table header style */
+.calendar-table th {
+    background: #f3f4f6;
+    font-size: 1rem;
+    color: #374151;
+    border-radius: 6px;
+}
+
+/* Mobile improvements */
+@media (max-width: 768px) {
+    .calendar-header {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .month-title {
+        order: -1;
+        margin-bottom: 6px;
+    }
+
+    .month-btn {
+        width: 100%;
+    }
+}
+
+.calendar-table {
+    width: 100%;
+    text-align: center;
+    margin-top: 30px;
+    border-collapse: collapse;
+}
+
+/* Day grid style */
+.calendar-table th,
+.calendar-table td {
+    padding: 22px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    transition: background 0.25s ease;
+}
+
+.calendar-table td {
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+/* Hover highlight */
+.calendar-table td:hover {
+    background: rgba(66, 135, 245, 0.12);
+    cursor: pointer;
+}
+
+/* Holiday day highlight */
+.holiday-day {
+    background-color: rgba(255, 72, 72, 0.15) !important;
+    border: 1px solid rgba(255, 50, 50, 0.4);
+}
+
+/* Holiday label */
+.holiday-label {
+    display: block;
+    font-size: 0.75rem;
+    margin-top: 6px;
+    background-color: #ff4747;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: 500;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Hover action */
+.holiday-day:hover .holiday-label {
+    background-color: #e02d2a;
+    cursor: pointer;
+}
+
+/* Modal styling */
+.edit-box {
+    width: 100%;
+    height: 120px;
+    padding: 10px;
+    resize: none;
+}
+
+.modal-content {
+    width: 110%;
+    margin-bottom: 57px;
+    padding: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.modal-header .btn-close {
+    margin-right: -20px;
+}
