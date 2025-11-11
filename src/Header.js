@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { FaUserCircle, FaClock, FaCamera } from "react-icons/fa";
+import { FaUserCircle, FaClock, FaCamera, FaSignOutAlt } from "react-icons/fa";
 import { apiFetch, EMP_PROFILE_FILE_BASE } from "./utils/api";
 import logo_eagle from "./assets/img/logo_eagle.png";
 import "./Header.css";
@@ -359,8 +359,9 @@ function Header() {
                         <button
                             onClick={() => navigate('/login?changePassword')}
                             className="emp-dropdown-btn"
+                            style={{ color: "#333333" }}
                         >
-                            Change Password
+                            <i className="fa fa-key"></i> Change Password
                         </button>
                         <button
                             onClick={() => {
@@ -369,7 +370,10 @@ function Header() {
                             }}
                             className="emp-dropdown-btn logout-btn"
                         >
-                            Logout
+                            <FaSignOutAlt
+                                className="logout-icon"
+                                style={{ marginRight: "6px" }}
+                            />Logout
                         </button>
                     </div>
                 )}

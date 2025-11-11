@@ -21,6 +21,7 @@ import "./left_navbar.css";
 function LeftNavbar({ navSize, setNavSize }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isTimesheetOpen, setTimesheetOpen] = useState(true);
+    const [isLeavemanagementOpen, setLeavemanagementOpen] = useState(true);
 
     const handleNavSizeChange = (size) => {
         setNavSize(size);
@@ -76,12 +77,24 @@ function LeftNavbar({ navSize, setNavSize }) {
                         )}
                     </li>
 
-                    {/* Leave Management (Placeholder for now) */}
-                    <li>
-                        <NavLink to="/leave-management" className={({ isActive }) => isActive ? "active" : ""}>
+                    {/* Leave Management Group */}
+                    <li className="dropdown-item">
+                        <div className="dropdown-header" onClick={() => setLeavemanagementOpen(!isLeavemanagementOpen)}>
                             <FaCalendarTimes className="nav-icon" />
                             {navSize === "full" && "Leave Management"}
-                        </NavLink>
+                            <span className="arrow-icon">{isLeavemanagementOpen ? <FaChevronUp /> : <FaChevronDown />}</span>
+                        </div>
+
+                        {isLeavemanagementOpen && (
+                            <ul className="submenu">
+                                <li>
+                                    <NavLink to="/My_leave_requests" className={({ isActive }) => isActive ? "active" : ""}>
+                                        <FaChevronRight className="nav-icon" />   {/* ✅ Icon added */}
+                                        {navSize === "full" && "My Leave Requests"}
+                                    </NavLink>
+                                </li>
+                            </ul>
+                        )}
                     </li>
 
                     {/* Holiday (Placeholder for now) */}
@@ -89,14 +102,6 @@ function LeftNavbar({ navSize, setNavSize }) {
                         <NavLink to="/Holiday" className={({ isActive }) => isActive ? "active" : ""}>
                             <FaCalendarAlt className="nav-icon" />
                             {navSize === "full" && "Holiday"}
-                        </NavLink>
-                    </li>
-
-                    {/* Configuration (Placeholder for now) */}
-                    <li>
-                        <NavLink to="/Configuration" className={({ isActive }) => isActive ? "active" : ""}>
-                            <i className="fa-solid fa-gears nav-icon"></i>
-                            {navSize === "full" && "Configuration"}
                         </NavLink>
                     </li>
                 </ul>
