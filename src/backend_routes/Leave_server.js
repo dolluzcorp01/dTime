@@ -77,6 +77,10 @@ router.post("/add_my_leave_request", upload.single("attachment"), (req, res) => 
         leave_description,
     } = req.body;
 
+    if (!emp_id || emp_id === "null" || emp_id === "undefined") {
+        return res.status(400).json({ success: false, message: "Employee ID is required" });
+    }
+
     const attachmentPath = req.file
         ? path.join(uploadPath, req.file.filename).replace(/\\/g, "\\")
         : null;
@@ -322,6 +326,10 @@ router.put("/update_my_leave_request/:id", upload.single("attachment"), (req, re
         removeOldAttachment,
     } = req.body;
 
+    if (!emp_id || emp_id === "null" || emp_id === "undefined") {
+        return res.status(400).json({ success: false, message: "Employee ID is required" });
+    }
+
     const newAttachment = req.file
         ? path.join(uploadPath, req.file.filename).replace(/\\/g, "\\")
         : null;
@@ -378,6 +386,10 @@ router.put("/update_my_leave_request/:id", upload.single("attachment"), (req, re
 router.put("/cancel_my_leave_request/:id", (req, res) => {
     const { id } = req.params;
     const { canceled_by } = req.body;
+
+    if (!canceled_by || canceled_by === "null" || canceled_by === "undefined") {
+        return res.status(400).json({ success: false, message: "Employee ID is required" });
+    }
 
     const query = `
         UPDATE leave_requests
@@ -484,6 +496,10 @@ router.get("/my_leave_history/:emp_id", (req, res) => {
 // ✅ Get approval info for employee
 router.get("/leave_approver/:emp_id", (req, res) => {
     const { emp_id } = req.params;
+
+    if (!emp_id || emp_id === "null" || emp_id === "undefined") {
+        return res.status(400).json({ success: false, message: "Employee ID is required" });
+    }
 
     const query = `
         SELECT e.emp_id, e.emp_department, la.level_1, la.level_2, la.level_3

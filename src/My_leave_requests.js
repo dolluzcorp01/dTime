@@ -33,6 +33,12 @@ function MyLeaveRequests() {
         setEmpId(id);
     }, []);
 
+    useEffect(() => {
+        if (empId) {
+            setFormData((prev) => ({ ...prev, emp_id: empId }));
+        }
+    }, [empId]);
+    
     const fetchApprover = async () => {
         try {
             const empId = localStorage.getItem("emp_id");
@@ -122,6 +128,11 @@ function MyLeaveRequests() {
 
     const handleSave = async () => {
         const { emp_id, leave_type_id, start_date, end_date } = formData;
+        debugger
+        if (!emp_id) {
+            Swal.fire("Error", "Employee ID is missing. Please log in again.", "error");
+            return;
+        }
 
         if (!leave_type_id || !start_date || !end_date) {
             Swal.fire("Validation Error", "Leave type, start date, and end date are required", "error");
@@ -212,6 +223,11 @@ function MyLeaveRequests() {
         });
 
         if (confirm.isConfirmed) {
+            if (!empId) {
+                Swal.fire("Error", "Employee ID is missing. Please log in again.", "error");
+                return;
+            }
+
             try {
                 const res = await apiFetch(`/api/Leave/delete_my_leave_request/${id}`, {
                     method: "DELETE",
@@ -239,6 +255,11 @@ function MyLeaveRequests() {
         });
 
         if (confirm.isConfirmed) {
+            if (!empId) {
+                Swal.fire("Error", "Employee ID is missing. Please log in again.", "error");
+                return;
+            }
+
             try {
                 const res = await apiFetch(`/api/Leave/cancel_my_leave_request/${id}`, {
                     method: "PUT",
