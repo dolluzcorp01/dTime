@@ -5,6 +5,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const nodemailer = require("nodemailer");
+const cron = require("node-cron");
 
 const router = express.Router();
 const db = getDBConnection("dTime");
@@ -203,6 +204,107 @@ const sendMail = async (to, subject, html) => {
     } catch (error) {
         console.error("❌ Error sending email:", error);
     }
+};
+
+// 🔹 Cron job runs every day at 9 AM
+cron.schedule("0 9 * * *", () => {
+    console.log("⏰ Running leave request escalation check...");
+    escalatePendingLeaveRequests();
+});
+
+const escalatePendingLeaveRequests = () => {
+    const fetchQuery = `
+        SELECT lr.leave_requests_id, lr.emp_id, lr.leave_status, lr.created_time,
+               la.level_1, la.level_2, la.level_3, e.emp_department,
+               TIMESTAMPDIFF(DAY, lr.created_time, NOW()) AS days_pending
+        FROM leave_requests lr
+        JOIN dadmin.employee e ON lr.emp_id = e.emp_id
+        LEFT JOIN leave_approval la ON la.department_id = e.emp_department
+        WHERE lr.leave_status = 'Pending';
+    `;
+
+    db.query(fetchQuery, (err, requests) => {
+        if (err) {
+            console.error("❌ Error fetching pending leaves:", err);
+            return;
+        }
+
+        requests.forEach(req => {
+            const { leave_requests_id, emp_id, level_1, level_2, level_3, days_pending } = req;
+
+            if (days_pending === 2) {
+                // Notify Level 2
+                notifyApprover(level_2, emp_id, leave_requests_id, "Level 2 escalation");
+            } else if (days_pending === 4) {
+                // Notify Level 3
+                notifyApprover(level_3, emp_id, leave_requests_id, "Level 3 escalation");
+            } else if (days_pending >= 5) {
+                // Auto-approve after 1 more day
+                autoApproveLeave(leave_requests_id, emp_id);
+            }
+        });
+    });
+};
+
+const notifyApprover = (approverId, emp_id, leave_requests_id, stage) => {
+    if (!approverId) return;
+
+    const empQuery = `
+        SELECT emp_mail_id, CONCAT(emp_first_name, ' ', emp_last_name) AS emp_name
+        FROM dadmin.employee WHERE emp_id = ?`;
+    const approverQuery = `
+        SELECT emp_mail_id, CONCAT(emp_first_name, ' ', emp_last_name) AS approver_name
+        FROM dadmin.employee WHERE emp_id = ?`;
+
+    db.query(empQuery, [emp_id], (err, empResult) => {
+        if (err || empResult.length === 0) return;
+        const { emp_name } = empResult[0];
+
+        db.query(approverQuery, [approverId], (err, approverResult) => {
+            if (err || approverResult.length === 0) return;
+
+            const { emp_mail_id: approverMail, approver_name } = approverResult[0];
+
+            const html = `
+                <div style="font-family: Arial; padding: 10px; border: 1px solid #ddd;">
+                    <h3 style="color: #4A90E2;">${stage}</h3>
+                    <p>Dear ${approver_name},</p>
+                    <p>The leave request for <strong>${emp_name}</strong> is still pending approval.</p>
+                    <p>Please review it at your earliest convenience.</p>
+                    <p style="color:#888;">- dTime System</p>
+                </div>
+            `;
+            sendMail(approverMail, `Leave Escalation - ${stage}`, html);
+        });
+    });
+};
+
+const autoApproveLeave = (leave_requests_id, emp_id) => {
+    const updateQuery = `
+        UPDATE leave_requests 
+        SET leave_status = 'Approved', approved_time = NOW()
+        WHERE leave_requests_id = ?;
+    `;
+    db.query(updateQuery, [leave_requests_id], (err) => {
+        if (err) return console.error("❌ Auto-approval error:", err);
+
+        // Fetch employee email to notify
+        const empQuery = `SELECT emp_mail_id, CONCAT(emp_first_name, ' ', emp_last_name) AS emp_name FROM dadmin.employee WHERE emp_id = ?`;
+        db.query(empQuery, [emp_id], (err, empResult) => {
+            if (err || empResult.length === 0) return;
+            const { emp_mail_id, emp_name } = empResult[0];
+
+            const html = `
+                <div style="font-family: Arial; padding: 10px; border: 1px solid #ddd;">
+                    <h3 style="color: #4A90E2;">Leave Auto-Approved</h3>
+                    <p>Dear ${emp_name},</p>
+                    <p>Your leave request was automatically approved due to no response from approvers.</p>
+                    <p style="color:#888;">- dTime System</p>
+                </div>
+            `;
+            sendMail(emp_mail_id, "Leave Request Auto-Approved", html);
+        });
+    });
 };
 
 // ✅ Update request (safe and clean)
