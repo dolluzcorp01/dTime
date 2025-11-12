@@ -296,12 +296,22 @@ function MyLeaveRequests() {
                     </div>
 
                     <div className="form-group">
-                        <label>Start Date <span style={{ color: "red" }}>*</span></label>
+                        <label>
+                            Start Date <span style={{ color: "red" }}>*</span>
+                        </label>
                         <input
                             type="date"
                             className="form-control"
                             value={formData.start_date}
-                            min={new Date().toISOString().split("T")[0]} // disable past dates
+                            min={new Date(new Date().setMonth(new Date().getMonth() - 1))
+                                .toISOString()
+                                .split("T")[0]} // allow 1 month before today
+                            onClick={(e) => {
+                                // ✅ open calendar manually (only if supported)
+                                if (typeof e.target.showPicker === "function") {
+                                    e.target.showPicker();
+                                }
+                            }}
                             onChange={(e) => {
                                 const selectedDate = e.target.value;
                                 setFormData({
@@ -327,13 +337,22 @@ function MyLeaveRequests() {
                     </div>
 
                     <div className="form-group">
-                        <label>End Date <span style={{ color: "red" }}>*</span></label>
+                        <label>
+                            End Date <span style={{ color: "red" }}>*</span>
+                        </label>
                         <input
+                            id="endDate"
                             type="date"
                             className="form-control"
+                            placeholder="dd-mm-yyyy"
                             value={formData.end_date}
-                            min={formData.start_date || new Date().toISOString().split("T")[0]} // disable before start date
-                            disabled={!formData.start_date} // disable until start date selected
+                            min={formData.start_date || new Date().toISOString().split("T")[0]}
+                            disabled={!formData.start_date}
+                            onClick={(e) => {
+                                if (typeof e.target.showPicker === "function") {
+                                    e.target.showPicker();
+                                }
+                            }}
                             onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
                         />
                     </div>
