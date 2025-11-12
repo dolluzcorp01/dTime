@@ -124,11 +124,11 @@ const sendLeaveNotification = (emp_id, start_date, end_date, leave_description) 
     db.query(empQuery, [emp_id], (err, empResult) => {
         if (err || empResult.length === 0) return console.error("❌ Employee fetch error:", err);
 
-        const { emp_mail_id, department_name, emp_name } = empResult[0];
+        const { emp_mail_id, emp_department, department_name, emp_name } = empResult[0];
 
         // 🔸 Find department ID in leave_approval
         const deptQuery = `SELECT * FROM leave_approval WHERE department_id = ?`;
-        db.query(deptQuery, [department_name], (err, approvalResult) => {
+        db.query(deptQuery, [emp_department], (err, approvalResult) => {
             if (err) return console.error("❌ Leave approval fetch error:", err);
 
             let recipientEmail = "admin@dolluzcorp.in";
@@ -139,7 +139,7 @@ const sendLeaveNotification = (emp_id, start_date, end_date, leave_description) 
                 const level1EmpId = approvalResult[0].level_1;
 
                 // 🔸 Fetch Level 1 approver email
-                const approverQuery = `SELECT emp_mail_id, CONCAT(emp_first_name, ' ', emp_last_name) AS approver_name FROM employee WHERE emp_id = ?`;
+                const approverQuery = `SELECT emp_mail_id, CONCAT(emp_first_name, ' ', emp_last_name) AS approver_name FROM dadmin.employee WHERE emp_id = ?`;
                 db.query(approverQuery, [level1EmpId], (err, approverResult) => {
                     if (err || approverResult.length === 0) {
                         console.error("⚠️ Approver not found, sending to admin.");
@@ -207,8 +207,8 @@ const sendMail = async (to, subject, html) => {
 };
 
 // 🔹 Cron job runs every day at 9 AM
-cron.schedule("0 9 * * *", () => {
-    console.log("⏰ Running leave request escalation check...");
+cron.schedule("0 12 * * *", () => {
+    console.log("⏰ Running leave request escalation check at 12 PM...");
     escalatePendingLeaveRequests();
 });
 
@@ -282,7 +282,8 @@ const notifyApprover = (approverId, emp_id, leave_requests_id, stage) => {
 const autoApproveLeave = (leave_requests_id, emp_id) => {
     const updateQuery = `
         UPDATE leave_requests 
-        SET leave_status = 'Approved', approved_time = NOW()
+        SET leave_status = 'Approved', status_updated_by = 'dAssist-2025-00001', 
+        status_updated_reason = 'Expired request auto updated', status_updated_time = NOW()
         WHERE leave_requests_id = ?;
     `;
     db.query(updateQuery, [leave_requests_id], (err) => {
@@ -439,6 +440,7 @@ router.get("/my_leave_balance/:emp_id", (req, res) => {
 
     const query = `
         SELECT 
+            lt.leave_type_id, 
             lt.leave_type,
             lt.max_leave AS max_leaves,
             (lt.max_leave - COALESCE(SUM(DATEDIFF(lr.end_date, lr.start_date) + 1), 0)) AS balance_leave

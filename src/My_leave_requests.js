@@ -122,7 +122,7 @@ function MyLeaveRequests() {
 
     const handleSave = async () => {
         const { emp_id, leave_type_id, start_date, end_date } = formData;
-        debugger;
+
         if (!leave_type_id || !start_date || !end_date) {
             Swal.fire("Validation Error", "Leave type, start date, and end date are required", "error");
             return;
