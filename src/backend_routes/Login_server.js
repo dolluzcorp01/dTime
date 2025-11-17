@@ -24,18 +24,13 @@ router.post("/Verifylogin", (req, res) => {
 
         // 🔒 Check if password exists (Google users might not have one)
         if (!employee.account_pass || employee.account_pass.trim() === "") {
-            return res.status(401).json({ message: "Login with Google instead. Password not set." });
+            return res.status(401).json({ message: "Access denied. Password not set." });
         }
 
         // 🔹 Verify bcrypt password
         const isPasswordMatch = bcrypt.compareSync(password, employee.account_pass);
         if (!isPasswordMatch) {
             return res.status(401).json({ message: "Invalid credentials" });
-        }
-
-        // ✅ Only Admins can log in
-        if (employee.emp_access_level !== "Admin") {
-            return res.status(403).json({ message: "Access denied. Only admins can login." });
         }
 
         // ✅ Successful login

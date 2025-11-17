@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { NavLink } from "react-router-dom";
+import { apiFetch } from "./utils/api";
 import {
     FaCalendarTimes,
     FaSignOutAlt,
@@ -22,6 +24,38 @@ function LeftNavbar({ navSize, setNavSize }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isTimesheetOpen, setTimesheetOpen] = useState(true);
     const [isLeavemanagementOpen, setLeavemanagementOpen] = useState(true);
+    const [employees, setEmployees] = useState([]);
+    const [loggedInEmp, setLoggedInEmp] = useState(null);
+    const [empId, setEmpId] = useState(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        fetchEmployees();
+    }, [navigate]);
+
+    useEffect(() => {
+        const id = localStorage.getItem("emp_id");
+        setEmpId(id);
+    }, []);
+
+    useEffect(() => {
+        if (empId && employees.length > 0) {
+            const emp = employees.find(e => e.emp_id == empId);
+            if (emp) {
+                setLoggedInEmp(emp);
+            }
+        }
+    }, [empId, employees]);
+
+    const fetchEmployees = async () => {
+        try {
+            const res = await apiFetch(`/api/employee/all`);
+            const data = await res.json();
+            setEmployees(data);
+        } catch (err) {
+            console.error("Error fetching employees:", err);
+        }
+    };
 
     const handleNavSizeChange = (size) => {
         setNavSize(size);
@@ -87,9 +121,17 @@ function LeftNavbar({ navSize, setNavSize }) {
 
                         {isLeavemanagementOpen && (
                             <ul className="submenu">
+                                {["Admin", "Sub Admin", "Manager"].includes(loggedInEmp?.emp_access_level) && (
+                                    <li>
+                                        <NavLink to="/Leave_approvals" className={({ isActive }) => isActive ? "active" : ""}>
+                                            <FaChevronRight className="nav-icon" />
+                                            {navSize === "full" && "Leave Approvals"}
+                                        </NavLink>
+                                    </li>
+                                )}
                                 <li>
                                     <NavLink to="/My_leave_requests" className={({ isActive }) => isActive ? "active" : ""}>
-                                        <FaChevronRight className="nav-icon" />   {/* ✅ Icon added */}
+                                        <FaChevronRight className="nav-icon" />
                                         {navSize === "full" && "My Leave Requests"}
                                     </NavLink>
                                 </li>

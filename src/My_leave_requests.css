@@ -11,6 +11,14 @@
     transition: margin-left 0.3s ease;
 }
 
+.leave-config-wrapper.full {
+    margin-left: 220px;
+}
+
+.leave-config-wrapper.icon-only {
+    margin-left: 60px;
+}
+
 .leave-header-row {
     display: flex;
     justify-content: space-between;
@@ -24,14 +32,6 @@
     background: #e8f0fe;
     padding: 6px 12px;
     border-radius: 8px;
-}
-
-.leave-config-wrapper.full {
-    margin-left: 220px;
-}
-
-.leave-config-wrapper.icon-only {
-    margin-left: 60px;
 }
 
 .leave-form {

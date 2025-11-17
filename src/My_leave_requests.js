@@ -38,7 +38,7 @@ function MyLeaveRequests() {
             setFormData((prev) => ({ ...prev, emp_id: empId }));
         }
     }, [empId]);
-    
+
     const fetchApprover = async () => {
         try {
             const empId = localStorage.getItem("emp_id");
@@ -128,7 +128,7 @@ function MyLeaveRequests() {
 
     const handleSave = async () => {
         const { emp_id, leave_type_id, start_date, end_date } = formData;
-        debugger
+
         if (!emp_id) {
             Swal.fire("Error", "Employee ID is missing. Please log in again.", "error");
             return;

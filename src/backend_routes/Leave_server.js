@@ -553,4 +553,50 @@ router.get("/leave_approver/:emp_id", (req, res) => {
     });
 });
 
+
+// ✅ Get all leave requests
+router.get("/leave_requests_list", (req, res) => {
+    const query = `
+        SELECT lr.leave_requests_id, lr.emp_id, CONCAT(e.emp_first_name, ' ', e.emp_last_name) AS emp_name, e.emp_department, 
+        lt.leave_type, lr.start_date, lr.start_date_breakdown, 
+        lr.end_date, lr.end_date_breakdown, lr.leave_description, lr.attachment, 
+        lr.leave_status, lr.created_time, lr.status_updated_by, lr.status_updated_time
+        FROM leave_requests lr
+        LEFT JOIN leave_type lt ON lr.leave_type_id = lt.leave_type_id
+        LEFT JOIN dadmin.employee e ON lr.emp_id = e.emp_id
+        WHERE lr.leave_status != 'Canceled' 
+        ORDER BY lr.leave_requests_id DESC;
+    `;
+
+    db.query(query, (err, results) => {
+        if (err) {
+            console.error("❌ Error fetching leave requests:", err);
+            return res.status(500).json({ error: "Database error" });
+        }
+        res.json(results);
+    });
+});
+
+router.put("/update_status/:id", (req, res) => {
+    const { id } = req.params;
+    const { status, reason, updated_by } = req.body;
+
+    const query = `
+        UPDATE leave_requests
+        SET leave_status = ?, 
+            status_updated_time = NOW(),
+            status_updated_reason = ?,
+            status_updated_by = ?  
+        WHERE leave_requests_id = ?;
+    `;
+
+    db.query(query, [status, reason || null, updated_by || null, id], (err, result) => {
+        if (err) {
+            console.error("❌ Error updating leave status:", err);
+            return res.status(500).json({ error: "Database error" });
+        }
+        res.json({ success: true, message: "Status updated successfully" });
+    });
+});
+
 module.exports = router;
