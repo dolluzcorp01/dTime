@@ -3,7 +3,7 @@
     min-height: 100vh;
 }
 
-.leave-config-wrapper {
+.leave-config-dashboard {
     flex-grow: 1;
     background: #f8f9fa;
     padding: 30px 50px;
@@ -11,12 +11,19 @@
     transition: margin-left 0.3s ease;
 }
 
-.leave-config-wrapper.full {
+.leave-config-dashboard.full {
     margin-left: 220px;
 }
 
-.leave-config-wrapper.icon-only {
+.leave-config-dashboard.icon-only {
     margin-left: 60px;
+}
+
+.leave-config-content {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    box-sizing: border-box;
 }
 
 .leave-header-row {

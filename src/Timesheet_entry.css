@@ -3,7 +3,7 @@
     min-height: 100vh;
 }
 
-.timesheet-wrapper {
+.timesheet-dashboard {
     flex: 1;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f4f6f8;
@@ -24,21 +24,28 @@
     flex-shrink: 0;
 }
 
-.timesheet-wrapper.full {
+.timesheet-dashboard.full {
     margin-left: 220px;
 }
 
-.timesheet-wrapper.icon-only {
+.timesheet-dashboard.icon-only {
     margin-left: 50px;
 }
 
-.timesheet-wrapper h1 {
+.timesheet-dashboard h1 {
     font-weight: 600;
     color: #111827;
     margin-bottom: 30px;
 }
 
-.table-wrapper {
+.timesheet-config-content {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.table-dashboard {
     width: 100%;
     overflow-x: auto;
     overflow-y: hidden;

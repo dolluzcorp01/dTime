@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
-import LeftNavbar from "./left_navbar";
-import Header from "./Header";
 import Swal from "sweetalert2";
 import "./Holiday.css";
 import { apiFetch } from "./utils/api";
 
-function Holiday() {
-    const [navSize, setNavSize] = useState("full");
+function Holiday({ navSize }) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [calendarDays, setCalendarDays] = useState([]);
     const [selectedDay, setSelectedDay] = useState(null);
@@ -124,58 +121,55 @@ function Holiday() {
 
     return (
         <div className="holiday-container">
-            <LeftNavbar navSize={navSize} setNavSize={setNavSize} />
-            <Header />
+            <div className={`holiday-dashboard ${navSize}`}>
+                <div className="holiday-config-content">
+                    <h2 style={{ marginBottom: "15px" }}>Holiday Calendar</h2>
+                    <div className="calendar">
+                        <div className="calendar-header">
+                            {currentDate.getMonth() !== 0 && (
+                                <button className="month-btn" onClick={prevMonth}>Prev</button>
+                            )}
 
-            <div className={`holiday-wrapper ${navSize}`}>
-                <h2>Holiday Calendar</h2>
+                            <div className="month-title">
+                                {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+                            </div>
 
-                <div className="calendar">
-                    <div className="calendar-header">
-                        {currentDate.getMonth() !== 0 && (
-                            <button className="month-btn" onClick={prevMonth}>Prev</button>
-                        )}
-
-                        <div className="month-title">
-                            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+                            {currentDate.getMonth() !== 11 && (
+                                <button className="month-btn" onClick={nextMonth}>Next</button>
+                            )}
                         </div>
 
-                        {currentDate.getMonth() !== 11 && (
-                            <button className="month-btn" onClick={nextMonth}>Next</button>
-                        )}
-                    </div>
-
-                    <table className="calendar-table">
-                        <thead>
-                            <tr>
-                                <th>Sun</th><th>Mon</th><th>Tue</th>
-                                <th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
-                            </tr>
-                        </thead>
-
-                        <tbody>
-                            {Array.from({ length: Math.ceil(calendarDays.length / 7) }).map((_, rowIndex) => (
-                                <tr key={rowIndex}>
-                                    {calendarDays.slice(rowIndex * 7, rowIndex * 7 + 7).map((day, i) => (
-                                        <td
-                                            key={i}
-                                            className={day && notes[day] ? "holiday-day" : ""}
-                                            onClick={() => handleDayClick(day)}
-                                        >
-                                            {day}
-                                            {day && notes[day] && (
-                                                <div className="holiday-label" title={notes[day].holiday_name}>
-                                                    {notes[day].holiday_name}
-                                                </div>
-                                            )}
-                                        </td>
-                                    ))}
+                        <table className="calendar-table">
+                            <thead>
+                                <tr>
+                                    <th>Sun</th><th>Mon</th><th>Tue</th>
+                                    <th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
 
+                            <tbody>
+                                {Array.from({ length: Math.ceil(calendarDays.length / 7) }).map((_, rowIndex) => (
+                                    <tr key={rowIndex}>
+                                        {calendarDays.slice(rowIndex * 7, rowIndex * 7 + 7).map((day, i) => (
+                                            <td
+                                                key={i}
+                                                className={day && notes[day] ? "holiday-day" : ""}
+                                                onClick={() => handleDayClick(day)}
+                                            >
+                                                {day}
+                                                {day && notes[day] && (
+                                                    <div className="holiday-label" title={notes[day].holiday_name}>
+                                                        {notes[day].holiday_name}
+                                                    </div>
+                                                )}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     );

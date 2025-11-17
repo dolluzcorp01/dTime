@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import LeftNavbar from "./left_navbar";
-import Header from "./Header";
 import Select from "react-select";
 import Swal from "sweetalert2";
 import { FaPaperclip, FaDownload, FaFilePdf, FaFileExcel } from "react-icons/fa";
@@ -13,8 +11,7 @@ import logo_eagle from "./assets/img/logo_eagle.png";
 import DOLLUZ_CORP from "./assets/img/DOLLUZ_CORP.png";
 import "./Leave_approvals.css";
 
-const Leave_approvals = () => {
-    const [navSize, setNavSize] = useState("full");
+const Leave_approvals = ({ navSize }) => {
     const [leaveRequests, setLeaveRequests] = useState([]);
     const [filteredRequests, setFilteredRequests] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -401,10 +398,7 @@ const Leave_approvals = () => {
 
     return (
         <div className="leave-requests-container">
-            <LeftNavbar navSize={navSize} setNavSize={setNavSize} />
-            <Header />
-
-            <div className={`leave-requests-wrapper ${navSize}`}>
+            <div className={`leave-requests-dashboard ${navSize}`}>
                 <div className="header-wrapper">
                     <h2>
                         Leave Requests

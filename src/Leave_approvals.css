@@ -3,7 +3,7 @@
     min-height: 100vh;
 }
 
-.leave-requests-wrapper {
+.leave-requests-dashboard {
     flex-grow: 1;
     background: #f8f9fa;
     padding: 30px 50px;
@@ -11,11 +11,11 @@
     transition: margin-left 0.3s ease;
 }
 
-.leave-requests-wrapper.full {
+.leave-requests-dashboard.full {
     margin-left: 220px;
 }
 
-.leave-requests-wrapper.icon-only {
+.leave-requests-dashboard.icon-only {
     margin-left: 60px;
 }
 
@@ -23,7 +23,6 @@
     width: 100%;
     max-width: 100%;
     margin: 0;
-    padding: -1px 20px;
     box-sizing: border-box;
 }
 

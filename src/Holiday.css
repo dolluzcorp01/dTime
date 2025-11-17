@@ -3,7 +3,7 @@
     min-height: 100vh;
 }
 
-.holiday-wrapper {
+.holiday-dashboard {
     flex-grow: 1;
     background: #f8f9fa;
     padding: 30px 50px;
@@ -11,12 +11,19 @@
     transition: margin-left 0.3s ease;
 }
 
-.holiday-wrapper.full {
+.holiday-dashboard.full {
     margin-left: 220px;
 }
 
-.holiday-wrapper.icon-only {
+.holiday-dashboard.icon-only {
     margin-left: 60px;
+}
+
+.holiday-config-content {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    box-sizing: border-box;
 }
 
 /* Calendar container */

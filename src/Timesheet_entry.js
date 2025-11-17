@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
-import LeftNavbar from "./left_navbar";
-import Header from "./Header";
 import { FaCommentDots, FaPlusCircle, FaMinusCircle } from "react-icons/fa";
 import "./Timesheet_entry.css";
 import { apiFetch } from "./utils/api";
 
-const Timesheet_entry = () => {
-    const [navSize, setNavSize] = useState("full");
+const Timesheet_entry = ({ navSize }) => {
     const [projects, setProjects] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [selectedProject, setSelectedProject] = useState("");
@@ -108,158 +105,158 @@ const Timesheet_entry = () => {
 
     return (
         <div className="timesheet-container">
-            <LeftNavbar navSize={navSize} setNavSize={setNavSize} />
-            <Header />
-            <div className={`timesheet-wrapper ${navSize}`}>
-                <h1>Timesheet Entry</h1>
-                <div className="table-wrapper">
-                    <table className="timesheet-table">
-                        <thead>
-                            <tr>
-                                <th>Project ID</th>
-                                <th>Project Name</th>
-                                <th>Task/Activity ID</th>
-                                <th>Task Description</th>
-                                <th>Onsite/Offshore</th>
-                                <th>Client Billable</th>
-                                <th>Billing Location</th>
-                                <th>MON</th>
-                                <th>TUE</th>
-                                <th>WEB</th>
-                                <th>THU</th>
-                                <th>FRI</th>
-                                <th>SAT</th>
-                                <th>SUN</th>
-                                <th>Total Hours</th>
-                                <th>Comments</th>
-                            </tr>
-                        </thead>
+            <div className={`timesheet-dashboard ${navSize}`}>
+                <div className="timesheet-config-content">
+                    <h1>Timesheet Entry</h1>
+                    <div className="table-wrapper">
+                        <table className="timesheet-table">
+                            <thead>
+                                <tr>
+                                    <th>Project ID</th>
+                                    <th>Project Name</th>
+                                    <th>Task/Activity ID</th>
+                                    <th>Task Description</th>
+                                    <th>Onsite/Offshore</th>
+                                    <th>Client Billable</th>
+                                    <th>Billing Location</th>
+                                    <th>MON</th>
+                                    <th>TUE</th>
+                                    <th>WEB</th>
+                                    <th>THU</th>
+                                    <th>FRI</th>
+                                    <th>SAT</th>
+                                    <th>SUN</th>
+                                    <th>Total Hours</th>
+                                    <th>Comments</th>
+                                </tr>
+                            </thead>
 
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <select
-                                        value={selectedProject}
-                                        onChange={(e) => fetchTasks(e.target.value)}
-                                    >
-                                        <option value="">Select Project</option>
-                                        {projects.map((proj) => (
-                                            <option key={proj.project_id} value={proj.project_id}>
-                                                {proj.project_id}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </td>
-
-                                <td>
-                                    <input
-                                        type="text"
-                                        value={projectName}
-                                        placeholder="Project Name"
-                                        readOnly
-                                    />
-                                </td>
-
-                                <td>
-                                    <select
-                                        value={selectedTask}
-                                        onChange={(e) => handleTaskSelect(e.target.value)}
-                                    >
-                                        <option value="">Select Task</option>
-                                        {tasks.map((task) => (
-                                            <option key={task.task_id} value={task.task_id}>
-                                                {task.task_id}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </td>
-
-                                <td>
-                                    <input
-                                        type="text"
-                                        value={taskDescription}
-                                        placeholder="Task Description"
-                                        readOnly
-                                    />
-                                </td>
-
-                                <td>
-                                    <select
-                                        value={onsiteOffshore}
-                                        onChange={(e) => setOnsiteOffshore(e.target.value)}
-                                    >
-                                        <option value="ON">ON</option>
-                                        <option value="OF">OFF</option>
-                                    </select>
-                                </td>
-
-                                <td>
-                                    <select
-                                        value={clientBillable}
-                                        onChange={(e) => setClientBillable(e.target.value)}
-                                    >
-                                        <option value="Billable">Billable</option>
-                                        <option value="Non-Billable">Non Billable</option>
-                                    </select>
-                                </td>
-
-                                <td>
-                                    <select
-                                        value={billingLocation}
-                                        onChange={(e) => setBillingLocation(e.target.value)}
-                                    >
-                                        <option value="">Select Location</option>
-                                        <option value="Hyderabad">Hyderabad</option>
-                                        <option value="Chennai">Chennai</option>
-                                        <option value="Pune">Pune</option>
-                                        <option value="Nagpur">Nagpur</option>
-                                    </select>
-                                </td>
-
-                                {[...Array(7)].map((_, i) => (
-                                    <td key={i}>
-                                        <input type="text" className="small-input" placeholder="0" />
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <select
+                                            value={selectedProject}
+                                            onChange={(e) => fetchTasks(e.target.value)}
+                                        >
+                                            <option value="">Select Project</option>
+                                            {projects.map((proj) => (
+                                                <option key={proj.project_id} value={proj.project_id}>
+                                                    {proj.project_id}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </td>
-                                ))}
 
-                                <td>
-                                    00:00
-                                </td>
-
-                                <td className="comment-icons">
-                                    <FaCommentDots className="icon comment-icon" />
-                                    <FaPlusCircle className="icon add-icon" />
-                                    <FaMinusCircle className="icon remove-icon" />
-                                </td>
-
-                            </tr>
-
-                            {/* Punch In / Punch Out Row */}
-                            <tr className="punch-row">
-                                <td colSpan={7} style={{ fontWeight: "bold", background: "#e7f3ff" }}>Punch In / Punch Out</td>
-                                {weeklyPunchHours.map((hours, i) => (
-                                    <td key={i} style={{ textAlign: "center", fontWeight: "bold" }}>{hours}</td>
-                                ))}
-                                <td style={{ fontWeight: "bold", background: "#d0eaff" }}>
-                                    {calculateTotalHours(weeklyPunchHours)}
-                                </td>
-                                <td></td>
-                            </tr>
-
-                            {/* Holiday / Time Off Row */}
-                            <tr className="holiday-row">
-                                <td colSpan={7} style={{ fontWeight: "bold", background: "#f8f9fa" }}>Holiday / Time Off</td>
-                                {[...Array(7)].map((_, i) => (
-                                    <td key={i}>
-                                        <input type="text" className="small-input" placeholder="0" />
+                                    <td>
+                                        <input
+                                            type="text"
+                                            value={projectName}
+                                            placeholder="Project Name"
+                                            readOnly
+                                        />
                                     </td>
-                                ))}
-                                <td>
-                                    00:00
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+                                    <td>
+                                        <select
+                                            value={selectedTask}
+                                            onChange={(e) => handleTaskSelect(e.target.value)}
+                                        >
+                                            <option value="">Select Task</option>
+                                            {tasks.map((task) => (
+                                                <option key={task.task_id} value={task.task_id}>
+                                                    {task.task_id}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </td>
+
+                                    <td>
+                                        <input
+                                            type="text"
+                                            value={taskDescription}
+                                            placeholder="Task Description"
+                                            readOnly
+                                        />
+                                    </td>
+
+                                    <td>
+                                        <select
+                                            value={onsiteOffshore}
+                                            onChange={(e) => setOnsiteOffshore(e.target.value)}
+                                        >
+                                            <option value="ON">ON</option>
+                                            <option value="OF">OFF</option>
+                                        </select>
+                                    </td>
+
+                                    <td>
+                                        <select
+                                            value={clientBillable}
+                                            onChange={(e) => setClientBillable(e.target.value)}
+                                        >
+                                            <option value="Billable">Billable</option>
+                                            <option value="Non-Billable">Non Billable</option>
+                                        </select>
+                                    </td>
+
+                                    <td>
+                                        <select
+                                            value={billingLocation}
+                                            onChange={(e) => setBillingLocation(e.target.value)}
+                                        >
+                                            <option value="">Select Location</option>
+                                            <option value="Hyderabad">Hyderabad</option>
+                                            <option value="Chennai">Chennai</option>
+                                            <option value="Pune">Pune</option>
+                                            <option value="Nagpur">Nagpur</option>
+                                        </select>
+                                    </td>
+
+                                    {[...Array(7)].map((_, i) => (
+                                        <td key={i}>
+                                            <input type="text" className="small-input" placeholder="0" />
+                                        </td>
+                                    ))}
+
+                                    <td>
+                                        00:00
+                                    </td>
+
+                                    <td className="comment-icons">
+                                        <FaCommentDots className="icon comment-icon" />
+                                        <FaPlusCircle className="icon add-icon" />
+                                        <FaMinusCircle className="icon remove-icon" />
+                                    </td>
+
+                                </tr>
+
+                                {/* Punch In / Punch Out Row */}
+                                <tr className="punch-row">
+                                    <td colSpan={7} style={{ fontWeight: "bold", background: "#e7f3ff" }}>Punch In / Punch Out</td>
+                                    {weeklyPunchHours.map((hours, i) => (
+                                        <td key={i} style={{ textAlign: "center", fontWeight: "bold" }}>{hours}</td>
+                                    ))}
+                                    <td style={{ fontWeight: "bold", background: "#d0eaff" }}>
+                                        {calculateTotalHours(weeklyPunchHours)}
+                                    </td>
+                                    <td></td>
+                                </tr>
+
+                                {/* Holiday / Time Off Row */}
+                                <tr className="holiday-row">
+                                    <td colSpan={7} style={{ fontWeight: "bold", background: "#f8f9fa" }}>Holiday / Time Off</td>
+                                    {[...Array(7)].map((_, i) => (
+                                        <td key={i}>
+                                            <input type="text" className="small-input" placeholder="0" />
+                                        </td>
+                                    ))}
+                                    <td>
+                                        00:00
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

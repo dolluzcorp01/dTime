@@ -1,13 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import Swal from "sweetalert2";
-import LeftNavbar from "./left_navbar";
 import { FaPaperclip } from "react-icons/fa";
-import Header from "./Header";
 import { apiFetch, API_BASE } from "./utils/api";
 import "./My_leave_requests.css";
 
-function MyLeaveRequests() {
-    const [navSize, setNavSize] = useState("full");
+function MyLeaveRequests({ navSize }) {
     const [empId, setEmpId] = useState(null);
     const [leaveTypes, setLeaveTypes] = useState([]);
     const [requests, setRequests] = useState([]);
@@ -288,318 +285,315 @@ function MyLeaveRequests() {
 
     return (
         <div className="leave-config-container">
-            <LeftNavbar navSize={navSize} setNavSize={setNavSize} />
-            <Header />
-
-            <div className={`leave-config-wrapper ${navSize}`}>
+            <div className={`leave-config-dashboard ${navSize}`}>
                 <div className="leave-header-row">
                     <h2>My Leave Requests</h2>
                     <div className="approval-info">
                         <strong>Approver: </strong> {approver || "Admin"}
                     </div>
                 </div>
-
-                <div className="leave-form">
-                    <div className="form-group">
-                        <label>Leave Type <span style={{ color: "red" }}>*</span></label>
-                        <select
-                            className="form-control"
-                            value={formData.leave_type_id}
-                            onChange={(e) => setFormData({ ...formData, leave_type_id: e.target.value })}
-                        >
-                            <option value="">Select Leave Type</option>
-                            {leaveTypes.map((lt) => (
-                                <option key={lt.leave_type_id} value={lt.leave_type_id}>
-                                    {lt.leave_type}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="form-group">
-                        <label>
-                            Start Date <span style={{ color: "red" }}>*</span>
-                        </label>
-                        <input
-                            type="date"
-                            className="form-control"
-                            value={formData.start_date}
-                            min={new Date(new Date().setMonth(new Date().getMonth() - 1))
-                                .toISOString()
-                                .split("T")[0]} // allow 1 month before today
-                            onClick={(e) => {
-                                // ✅ open calendar manually (only if supported)
-                                if (typeof e.target.showPicker === "function") {
-                                    e.target.showPicker();
-                                }
-                            }}
-                            onChange={(e) => {
-                                const selectedDate = e.target.value;
-                                setFormData({
-                                    ...formData,
-                                    start_date: selectedDate,
-                                    end_date: "", // reset end date if start date changes
-                                });
-                            }}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>Start Date Breakdown</label>
-                        <select
-                            className="form-control"
-                            value={formData.start_date_breakdown}
-                            onChange={(e) => setFormData({ ...formData, start_date_breakdown: e.target.value })}
-                        >
-                            <option>Full</option>
-                            <option>First half</option>
-                            <option>Second half</option>
-                        </select>
-                    </div>
-
-                    <div className="form-group">
-                        <label>
-                            End Date <span style={{ color: "red" }}>*</span>
-                        </label>
-                        <input
-                            id="endDate"
-                            type="date"
-                            className="form-control"
-                            placeholder="dd-mm-yyyy"
-                            value={formData.end_date}
-                            min={formData.start_date || new Date().toISOString().split("T")[0]}
-                            disabled={!formData.start_date}
-                            onClick={(e) => {
-                                if (typeof e.target.showPicker === "function") {
-                                    e.target.showPicker();
-                                }
-                            }}
-                            onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label>End Date Breakdown</label>
-                        <select
-                            className="form-control"
-                            value={formData.end_date_breakdown}
-                            onChange={(e) => setFormData({ ...formData, end_date_breakdown: e.target.value })}
-                        >
-                            <option>Full</option>
-                            <option>First half</option>
-                            <option>Second half</option>
-                        </select>
-                    </div>
-
-                    <div className="form-group">
-                        <label>Attachment</label>
-
-                        {/* ✅ Show existing file with delete icon */}
-                        {formData.old_attachment && !file && (
-                            <div
-                                style={{
-                                    marginBottom: "5px",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "space-between",
-                                    background: "#f7f7f7",
-                                    borderRadius: "6px",
-                                    padding: "5px 10px",
-                                }}
+                <div className="leave-config-content">
+                    <div className="leave-form">
+                        <div className="form-group">
+                            <label>Leave Type <span style={{ color: "red" }}>*</span></label>
+                            <select
+                                className="form-control"
+                                value={formData.leave_type_id}
+                                onChange={(e) => setFormData({ ...formData, leave_type_id: e.target.value })}
                             >
-                                <a
-                                    href={`${API_BASE}/${formData.old_attachment.replace(/\\/g, "/")}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ color: "#4a90e2", fontSize: "0.9rem" }}
-                                >
-                                    {formData.old_attachment.split("\\").pop()}
-                                </a>
-                                <i class="fa-solid fa-xmark"
-                                    onClick={handleRemoveOldAttachment}
-                                    title="Remove attachment"
+                                <option value="">Select Leave Type</option>
+                                {leaveTypes.map((lt) => (
+                                    <option key={lt.leave_type_id} value={lt.leave_type_id}>
+                                        {lt.leave_type}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label>
+                                Start Date <span style={{ color: "red" }}>*</span>
+                            </label>
+                            <input
+                                type="date"
+                                className="form-control"
+                                value={formData.start_date}
+                                min={new Date(new Date().setMonth(new Date().getMonth() - 1))
+                                    .toISOString()
+                                    .split("T")[0]} // allow 1 month before today
+                                onClick={(e) => {
+                                    // ✅ open calendar manually (only if supported)
+                                    if (typeof e.target.showPicker === "function") {
+                                        e.target.showPicker();
+                                    }
+                                }}
+                                onChange={(e) => {
+                                    const selectedDate = e.target.value;
+                                    setFormData({
+                                        ...formData,
+                                        start_date: selectedDate,
+                                        end_date: "", // reset end date if start date changes
+                                    });
+                                }}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>Start Date Breakdown</label>
+                            <select
+                                className="form-control"
+                                value={formData.start_date_breakdown}
+                                onChange={(e) => setFormData({ ...formData, start_date_breakdown: e.target.value })}
+                            >
+                                <option>Full</option>
+                                <option>First half</option>
+                                <option>Second half</option>
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label>
+                                End Date <span style={{ color: "red" }}>*</span>
+                            </label>
+                            <input
+                                id="endDate"
+                                type="date"
+                                className="form-control"
+                                placeholder="dd-mm-yyyy"
+                                value={formData.end_date}
+                                min={formData.start_date || new Date().toISOString().split("T")[0]}
+                                disabled={!formData.start_date}
+                                onClick={(e) => {
+                                    if (typeof e.target.showPicker === "function") {
+                                        e.target.showPicker();
+                                    }
+                                }}
+                                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label>End Date Breakdown</label>
+                            <select
+                                className="form-control"
+                                value={formData.end_date_breakdown}
+                                onChange={(e) => setFormData({ ...formData, end_date_breakdown: e.target.value })}
+                            >
+                                <option>Full</option>
+                                <option>First half</option>
+                                <option>Second half</option>
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label>Attachment</label>
+
+                            {/* ✅ Show existing file with delete icon */}
+                            {formData.old_attachment && !file && (
+                                <div
                                     style={{
-                                        border: "none",
-                                        background: "transparent",
-                                        color: "gray",
-                                        fontWeight: "bold",
-                                        cursor: "pointer",
-                                        fontSize: "16px",
+                                        marginBottom: "5px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                        background: "#f7f7f7",
+                                        borderRadius: "6px",
+                                        padding: "5px 10px",
                                     }}
-                                ></i>
-                            </div>
-                        )}
-
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            className="form-control"
-                            accept=".jpg,.jpeg,.png,.pdf"
-                            onChange={handleFileChange}
-                        />
-                    </div>
-
-                    <div className="form-group" style={{ flex: 1 }}>
-                        <label>Description</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Description"
-                            value={formData.leave_description}
-                            onChange={(e) => setFormData({ ...formData, leave_description: e.target.value })}
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label style={{ visibility: "hidden" }}>Submit</label>
-                        {editId ? (
-                            <div style={{ display: "flex", gap: "10px" }}>
-                                <button className="btn btn-success w-100" onClick={handleSave}>
-                                    Update
-                                </button>
-                                <button className="btn btn-secondary w-100" onClick={handleCancelEdit}>
-                                    Cancel
-                                </button>
-                            </div>
-                        ) : (
-                            <button className="btn btn-success w-100" onClick={handleSave}>
-                                Submit
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                <table className="leave-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Leave Type</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Attachment</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {requests.map((item) => (
-                            <tr key={item.leave_requests_id}>
-                                <td>{item.leave_requests_id}</td>
-                                <td>{item.leave_type}</td>
-                                <td>{formatDate(item.start_date)}</td>
-                                <td>{formatDate(item.end_date)}</td>
-                                <td style={{ textAlign: "center" }}>
-                                    {item.attachment ? (
-                                        <a
-                                            href={`${API_BASE}/${item.attachment.replace(/\\/g, "/")}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            style={{ color: "#4a90e2", fontSize: "18px" }}
-                                            title={item.attachment.split("\\").pop()}
-                                        >
-                                            <FaPaperclip />
-                                        </a>
-                                    ) : (
-                                        <span style={{ color: "#999" }}>No File</span>
-                                    )}
-                                </td>
-                                <td>
-                                    <span
-                                        style={{
-                                            color:
-                                                item.leave_status === "Canceled"
-                                                    ? "red"
-                                                    : item.leave_status === "Approved"
-                                                        ? "green"
-                                                        : "orange",
-                                            fontWeight: "500",
-                                        }}
+                                >
+                                    <a
+                                        href={`${API_BASE}/${formData.old_attachment.replace(/\\/g, "/")}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ color: "#4a90e2", fontSize: "0.9rem" }}
                                     >
-                                        {item.leave_status || "Pending"}
-                                    </span>
-                                </td>
-                                <td>
-                                    {item.leave_status === "Canceled" ? (
-                                        <>
-                                            <button
-                                                className="btn btn-warning btn-sm"
-                                                onClick={() => handleEdit(item)}
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                className="btn btn-danger btn-sm ms-2"
-                                                onClick={() => handleDelete(item.leave_requests_id)}
-                                            >
-                                                Delete
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <button
-                                                className="btn btn-gray btn-sm"
-                                                onClick={() => handleCancel(item.leave_requests_id)}
-                                            >
-                                                Cancel
-                                            </button>
-                                        </>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                        {formData.old_attachment.split("\\").pop()}
+                                    </a>
+                                    <i class="fa-solid fa-xmark"
+                                        onClick={handleRemoveOldAttachment}
+                                        title="Remove attachment"
+                                        style={{
+                                            border: "none",
+                                            background: "transparent",
+                                            color: "gray",
+                                            fontWeight: "bold",
+                                            cursor: "pointer",
+                                            fontSize: "16px",
+                                        }}
+                                    ></i>
+                                </div>
+                            )}
 
-                <div className="leave-summary-container">
-                    <div className="leave-balance">
-                        <h4>Leave Balance</h4>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Leave Type</th>
-                                    <th>Max Leaves</th>
-                                    <th>Balance Leave</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {leaveBalance.map((item, i) => (
-                                    <tr key={i}>
-                                        <td>{item.leave_type}</td>
-                                        <td>{item.max_leaves}</td>
-                                        <td>{item.balance_leave}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="form-control"
+                                accept=".jpg,.jpeg,.png,.pdf"
+                                onChange={handleFileChange}
+                            />
+                        </div>
+
+                        <div className="form-group" style={{ flex: 1 }}>
+                            <label>Description</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Description"
+                                value={formData.leave_description}
+                                onChange={(e) => setFormData({ ...formData, leave_description: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label style={{ visibility: "hidden" }}>Submit</label>
+                            {editId ? (
+                                <div style={{ display: "flex", gap: "10px" }}>
+                                    <button className="btn btn-success w-100" onClick={handleSave}>
+                                        Update
+                                    </button>
+                                    <button className="btn btn-secondary w-100" onClick={handleCancelEdit}>
+                                        Cancel
+                                    </button>
+                                </div>
+                            ) : (
+                                <button className="btn btn-success w-100" onClick={handleSave}>
+                                    Submit
+                                </button>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="leave-history">
-                        <h4>Leave History</h4>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Leave ID</th>
-                                    <th>Start Date</th>
-                                    <th>End Date</th>
-                                    <th>Leave Type</th>
-                                    <th>Reason</th>
+                    <table className="leave-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Leave Type</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Attachment</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {requests.map((item) => (
+                                <tr key={item.leave_requests_id}>
+                                    <td>{item.leave_requests_id}</td>
+                                    <td>{item.leave_type}</td>
+                                    <td>{formatDate(item.start_date)}</td>
+                                    <td>{formatDate(item.end_date)}</td>
+                                    <td style={{ textAlign: "center" }}>
+                                        {item.attachment ? (
+                                            <a
+                                                href={`${API_BASE}/${item.attachment.replace(/\\/g, "/")}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{ color: "#4a90e2", fontSize: "18px" }}
+                                                title={item.attachment.split("\\").pop()}
+                                            >
+                                                <FaPaperclip />
+                                            </a>
+                                        ) : (
+                                            <span style={{ color: "#999" }}>No File</span>
+                                        )}
+                                    </td>
+                                    <td>
+                                        <span
+                                            style={{
+                                                color:
+                                                    item.leave_status === "Canceled"
+                                                        ? "red"
+                                                        : item.leave_status === "Approved"
+                                                            ? "green"
+                                                            : "orange",
+                                                fontWeight: "500",
+                                            }}
+                                        >
+                                            {item.leave_status || "Pending"}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {item.leave_status === "Canceled" ? (
+                                            <>
+                                                <button
+                                                    className="btn btn-warning btn-sm"
+                                                    onClick={() => handleEdit(item)}
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    className="btn btn-danger btn-sm ms-2"
+                                                    onClick={() => handleDelete(item.leave_requests_id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    className="btn btn-gray btn-sm"
+                                                    onClick={() => handleCancel(item.leave_requests_id)}
+                                                >
+                                                    Cancel
+                                                </button>
+                                            </>
+                                        )}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {leaveHistory.map((item) => (
-                                    <tr key={item.leave_id}>
-                                        <td>{item.leave_id}</td>
-                                        <td>{formatDate(item.start_date)}</td>
-                                        <td>{formatDate(item.end_date)}</td>
-                                        <td>{item.leave_type}</td>
-                                        <td>{item.reason}</td>
+                            ))}
+                        </tbody>
+                    </table>
+
+                    <div className="leave-summary-container">
+                        <div className="leave-balance">
+                            <h4>Leave Balance</h4>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Leave Type</th>
+                                        <th>Max Leaves</th>
+                                        <th>Balance Leave</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {leaveBalance.map((item, i) => (
+                                        <tr key={i}>
+                                            <td>{item.leave_type}</td>
+                                            <td>{item.max_leaves}</td>
+                                            <td>{item.balance_leave}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="leave-history">
+                            <h4>Leave History</h4>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Leave ID</th>
+                                        <th>Start Date</th>
+                                        <th>End Date</th>
+                                        <th>Leave Type</th>
+                                        <th>Reason</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {leaveHistory.map((item) => (
+                                        <tr key={item.leave_id}>
+                                            <td>{item.leave_id}</td>
+                                            <td>{formatDate(item.start_date)}</td>
+                                            <td>{formatDate(item.end_date)}</td>
+                                            <td>{item.leave_type}</td>
+                                            <td>{item.reason}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
     );
