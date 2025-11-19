@@ -191,4 +191,17 @@ router.post("/verify-otp", (req, res) => {
     });
 });
 
+router.get("/get-access", (req, res) => {
+    const query = `SELECT * FROM access_levels ORDER BY category, page_name`;
+
+    db.query(query, (err, result) => {
+        if (err) {
+            console.error("❌ Fetch Error:", err);
+            return res.status(500).json({ error: "Database error" });
+        }
+
+        res.json({ success: true, data: result });
+    });
+});
+
 module.exports = router;

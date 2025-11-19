@@ -28,9 +28,38 @@ const Leave_approvals = ({ navSize }) => {
     const [loggedInEmp, setLoggedInEmp] = useState(null);
     const [empId, setEmpId] = useState(null);
     const navigate = useNavigate();
+    const [accessLevels, setAccessLevels] = useState([]);
+
+    const fetchAccessLevels = async () => {
+        try {
+            const res = await apiFetch(`/api/login/get-access`);
+            const data = await res.json();
+            if (data.success) {
+                setAccessLevels(data.data);
+            }
+        } catch (err) {
+            console.error("❌ Error fetching access levels:", err);
+        }
+    };
+
+    const hasPageAccess = (pageName, empData = loggedInEmp) => {
+        if (!empData || accessLevels.length === 0) return false;
+
+        const role = empData.emp_access_level;
+        const page = accessLevels.find((p) => p.page_name === pageName);
+        if (!page) return false;
+
+        if (role === "Admin") return page.admin_access === 1;
+        if (role === "Sub Admin") return page.subadmin_access === 1;
+        if (role === "Manager") return page.manager_access === 1;
+        if (role === "User") return page.user_access === 1;
+
+        return false;
+    };
 
     useEffect(() => {
         fetchEmployees();
+        fetchAccessLevels();
     }, [navigate]);
 
     useEffect(() => {
@@ -39,20 +68,17 @@ const Leave_approvals = ({ navSize }) => {
     }, []);
 
     useEffect(() => {
-        if (empId && employees.length > 0) {
+        if (empId && employees.length > 0 && accessLevels.length > 0) {
             const emp = employees.find(e => e.emp_id == empId);
+
             if (emp) {
                 setLoggedInEmp(emp);
-
-                // Allowed roles
-                const allowedRoles = ["Admin", "Sub Admin", "Manager"];
-
-                if (!allowedRoles.includes(emp.emp_access_level)) {
+                if (!hasPageAccess("Leave Approvals", emp)) {
                     navigate("/login");
                 }
             }
         }
-    }, [empId, employees]);
+    }, [empId, employees, accessLevels]);
 
     const fetchEmployees = async () => {
         try {

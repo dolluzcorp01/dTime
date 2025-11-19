@@ -28,9 +28,11 @@ function LeftNavbar({ navSize, setNavSize }) {
     const [loggedInEmp, setLoggedInEmp] = useState(null);
     const [empId, setEmpId] = useState(null);
     const navigate = useNavigate();
+    const [accessLevels, setAccessLevels] = useState([]);
 
     useEffect(() => {
         fetchEmployees();
+        fetchAccessLevels();
     }, [navigate]);
 
     useEffect(() => {
@@ -46,6 +48,35 @@ function LeftNavbar({ navSize, setNavSize }) {
             }
         }
     }, [empId, employees]);
+
+    const fetchAccessLevels = async () => {
+        try {
+            const res = await apiFetch(`/api/login/get-access`);
+            const data = await res.json();
+            if (data.success) {
+                setAccessLevels(data.data);
+                console.log(data.data)
+            }
+        } catch (err) {
+            console.error("❌ Error fetching access levels:", err);
+        }
+    };
+
+    const hasPageAccess = (pageName) => {
+        if (!loggedInEmp || accessLevels.length === 0) return false;
+
+        const role = loggedInEmp.emp_access_level; // Admin, Sub Admin, Manager, User
+
+        const page = accessLevels.find(p => p.page_name === pageName);
+        if (!page) return false;
+
+        if (role === "Admin") return page.admin_access === 1;
+        if (role === "Sub Admin") return page.subadmin_access === 1;
+        if (role === "Manager") return page.manager_access === 1;
+        if (role === "User") return page.user_access === 1;
+
+        return false;
+    };
 
     const fetchEmployees = async () => {
         try {
@@ -121,7 +152,7 @@ function LeftNavbar({ navSize, setNavSize }) {
 
                         {isLeavemanagementOpen && (
                             <ul className="submenu">
-                                {["Admin", "Sub Admin", "Manager"].includes(loggedInEmp?.emp_access_level) && (
+                                {hasPageAccess("Leave Approvals") && (
                                     <li>
                                         <NavLink to="/Leave_approvals" className={({ isActive }) => isActive ? "active" : ""}>
                                             <FaChevronRight className="nav-icon" />
