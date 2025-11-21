@@ -146,118 +146,6 @@
     background-color: #e02d2a;
 }
 
-/* Holiday modal */
-.holiday-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(4px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 99999;
-}
-
-/* Modal box */
-.holiday-modal-content {
-    background: #fff;
-    width: 650px;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 25px 30px;
-    border-radius: 18px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-    position: relative;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    animation: fadeInScale 0.25s ease;
-}
-
-/* Modal Title */
-.holiday-modal-title {
-    margin-bottom: 20px;
-    font-size: 22px;
-    font-weight: 600;
-    color: #222;
-}
-
-/* Modal Body - Floating Inner Box with Strong Shadow */
-.holiday-modal-body {
-    background: #ffffff;
-    padding: 22px 25px;
-    border-radius: 14px;
-    border: 1px solid #e6e6e6;
-    box-shadow:
-        0 3px 8px rgba(0, 0, 0, 0.1),
-        0 6px 18px rgba(0, 0, 0, 0.12),
-        0 10px 28px rgba(0, 0, 0, 0.08);
-}
-
-/* Form Inputs */
-.holiday-modal-body .form-label {
-    font-weight: 500;
-    color: #333;
-}
-
-.holiday-modal-body .form-control,
-.holiday-modal-body .form-select {
-    border-radius: 8px;
-    padding: 10px 12px;
-    border: 1px solid #ccc;
-    transition: border-color 0.3s ease;
-}
-
-.holiday-modal-body .form-control:focus,
-.holiday-modal-body .form-select:focus {
-    border-color: #3498db;
-    outline: none;
-}
-
-/* Action Buttons */
-.holiday-modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-/* Darker green Save button */
-.holiday-save-btn {
-    background-color: #0e6f28;
-    color: white;
-    border: none;
-    padding: 9px 22px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.holiday-save-btn:hover {
-    background-color: #0b571f;
-    transform: scale(1.03);
-}
-
-/* Delete button */
-.holiday-delete-btn {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 9px 22px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.holiday-delete-btn:hover {
-    background-color: #c0392b;
-    transform: scale(1.03);
-}
-
 /* Close icon */
 .holiday-close-icon {
     position: absolute;
@@ -278,6 +166,131 @@
     from {
         opacity: 0;
         transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Force SweetAlert2 popup to appear above your modal */
+.swal2-container {
+    z-index: 999999 !important;
+}
+
+.calendar-popup-box {
+    position: absolute;
+    top: 17%;
+    right: 50px;
+    margin-top: 5px;
+    background: white;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    padding: 12px;
+    width: 220px;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 2000;
+}
+
+.holiday-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    margin-top: 5px;
+}
+
+.holiday-chip {
+    padding: 2px 6px;
+    font-size: 0.70rem;
+    font-weight: 600;
+    border-radius: 6px;
+    color: white;
+    width: 90%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.more-chip {
+    background: #555;
+}
+
+/* Multi Holiday Popup Modal */
+.multi-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999;
+}
+
+.multi-modal-content {
+    background: #ffffff;
+    width: 380px;
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 25px 30px;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    animation: fadeInScale 0.25s ease;
+    position: relative;
+}
+
+.multi-modal-content h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 18px;
+    text-align: center;
+    color: #222;
+    margin-top: -5px;
+}
+
+.multi-holiday-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+    padding: 12px 12px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #e6e6e6;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.multi-holiday-row span {
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+}
+
+/* Buttons inside list */
+.multi-holiday-row button {
+    margin-left: 8px;
+}
+
+/* Close on outside click hover effect */
+.multi-modal-overlay:hover {
+    cursor: pointer;
+}
+
+/* Prevent content close clicking inside */
+.multi-modal-content:hover {
+    cursor: default;
+}
+
+/* smooth animation */
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.93);
     }
 
     to {

@@ -1,26 +1,35 @@
 import React, { useState, useEffect } from "react";
-import Swal from "sweetalert2";
-import "./Holiday.css";
+import { useNavigate } from "react-router-dom";
+import logo_eagle from "./assets/img/logo_eagle.png";
 import { apiFetch } from "./utils/api";
+import "./Holiday.css";
 
 function Holiday({ navSize }) {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [calendarDays, setCalendarDays] = useState([]);
     const [selectedDay, setSelectedDay] = useState(null);
-    const [note, setNote] = useState("");
     const [notes, setNotes] = useState({});
-
-    const departments = ["Development", "Testing", "HR", "Support"];
-    const job_positions = ["Manager", "Team lead", "HR", "Senior Developer", "Junior Developer", "Data Management"];
-    const locations = ["Chennai", "Hyderabad", "Pune, Nagpur"];
-
-    const [holidayFor, setHolidayFor] = useState("");
-    const [specificValue, setSpecificValue] = useState("");
-    const [holidayName, setHolidayName] = useState("");
-    const [multiDay, setMultiDay] = useState(false);
-    const [endDay, setEndDay] = useState("");
-    const [empId, setEmpId] = useState(null);
     const [holidayList, setHolidayList] = useState([]);
+    const [loggedInEmp, setLoggedInEmp] = useState(null);
+    const [employees, setEmployees] = useState([]);
+    const [empId, setEmpId] = useState(null);
+    const navigate = useNavigate();
+
+    const realYear = new Date().getFullYear();
+    const minYear = realYear - 5;
+    const maxYear = realYear + 5;
+
+    const [showCalendarPopup, setShowCalendarPopup] = useState(false);
+    const popupRef = React.useRef(null);
+    const iconRef = React.useRef(null);
+
+    const [multiHolidayModal, setMultiHolidayModal] = useState(false);
+    const [selectedHolidayList, setSelectedHolidayList] = useState([]);
+
+
+    useEffect(() => {
+        fetchEmployees();
+    }, []);
 
     useEffect(() => {
         const id = localStorage.getItem("emp_id");
@@ -28,59 +37,93 @@ function Holiday({ navSize }) {
     }, []);
 
     useEffect(() => {
-        fetchHolidays();
-    }, [currentDate]);
+        if (empId && employees.length > 0) {
+            const emp = employees.find(e => e.emp_id == empId);
+            if (emp) {
+                setLoggedInEmp(emp);
+                if ((emp.emp_access_level !== "Admin" && emp.emp_access_level !== "Sub Admin")) {
+                    navigate("/login");
+                }
+            }
+        }
+    }, [empId, employees]);
+
+    useEffect(() => {
+        if (empId && employees.length > 0) {
+            const emp = employees.find(e => e.emp_id == empId);
+            if (emp) {
+                setLoggedInEmp(emp);
+                if (emp.emp_access_level !== "Admin" && emp.emp_access_level !== "Sub Admin") {
+                    navigate("/login");
+                }
+            }
+
+            fetchHolidays();
+        }
+    }, [empId, employees, currentDate]);
+
+    const fetchEmployees = async () => {
+        try {
+            const res = await apiFetch(`/api/employee/all`);
+            const data = await res.json();
+            setEmployees(data);
+        } catch (err) {
+            console.error("Error fetching employees:", err);
+        }
+    };
 
     const fetchHolidays = async () => {
         const month = currentDate.getMonth() + 1;
         const year = currentDate.getFullYear();
 
         try {
-            const res = await apiFetch(`/api/holiday/list?month=${month}&year=${year}`);
+            const res = await apiFetch(`/api/holiday/list?month=${month}&year=${year}&emp_id=${empId}`);
             const data = await res.json();
-
             setHolidayList(data);
 
             const holidayMarks = {};
             data.forEach(h => {
-                const day = new Date(h.holiday_date).getDate();
-                holidayMarks[day] = h; // Store holiday info
+                const start = new Date(h.holiday_date);
+                const end = h.holiday_end ? new Date(h.holiday_end) : start;
+
+                let current = new Date(start);
+                while (current <= end) {
+                    const day = current.getDate();
+                    if (!holidayMarks[day]) holidayMarks[day] = [];
+                    holidayMarks[day].push(h);
+                    current.setDate(current.getDate() + 1);
+                }
             });
 
-            setNotes(holidayMarks); // Use notes to mark UI
+            setNotes(holidayMarks);
         } catch (err) {
             console.error("❌ Fetch error:", err);
         }
     };
 
-    const normalizeDate = (dateString) => {
-        if (!dateString) return "";
-        return dateString.split("T")[0]; // Keeps only yyyy-MM-dd
+    const generateColorFromName = (name) => {
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        let color = '#';
+        for (let i = 0; i < 3; i++) {
+            const value = (hash >> (i * 8)) & 0xFF;
+            color += ('00' + value.toString(16)).substr(-2);
+        }
+        return color;
     };
 
     const handleDayClick = (day) => {
         if (!day) return;
         setSelectedDay(day);
 
-        const holiday = notes[day];
+        const list = notes[day];   // list of holidays for day
 
-        if (holiday) {
-            const formattedStart = normalizeDate(holiday.holiday_date);
-            const formattedEnd = normalizeDate(holiday.holiday_end);
-
-            setHolidayName(holiday.holiday_name);
-            setHolidayFor(holiday.holiday_for);
-            setSpecificValue(holiday.holiday_value);
-
-            const isMulti = formattedEnd && formattedEnd !== formattedStart;
-            setMultiDay(isMulti);
-            setEndDay(isMulti ? formattedEnd : "");
-        } else {
-            setHolidayName("");
-            setHolidayFor("");
-            setSpecificValue("");
-            setMultiDay(false);
-            setEndDay("");
+        if (list && list.length > 1) {
+            setSelectedHolidayList(list);
+            setMultiHolidayModal(true);
+            return;
         }
     };
 
@@ -112,21 +155,107 @@ function Holiday({ navSize }) {
     };
 
     const prevMonth = () => {
-        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+        const y = currentDate.getFullYear();
+        const m = currentDate.getMonth();
+
+        // Block going below minYear January
+        if (y === minYear && m === 0) return;
+
+        setCurrentDate(new Date(y, m - 1, 1));
     };
 
     const nextMonth = () => {
-        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+        const y = currentDate.getFullYear();
+        const m = currentDate.getMonth();
+
+        // Block going above maxYear December
+        if (y === maxYear && m === 11) return;
+
+        setCurrentDate(new Date(y, m + 1, 1));
     };
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (
+                popupRef.current &&
+                !popupRef.current.contains(event.target) &&
+                iconRef.current &&
+                !iconRef.current.contains(event.target)
+            ) {
+                setShowCalendarPopup(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     return (
         <div className="holiday-container">
             <div className={`holiday-dashboard ${navSize}`}>
-                <div className="holiday-config-content">
-                    <h2 style={{ marginBottom: "15px" }}>Holiday Calendar</h2>
+                <div className="header-wrapper">
+                    <h2>
+                        <a className="navbar-brand" href="#">
+                            <img
+                                src={logo_eagle}
+                                alt="dAdmin Logo"
+                                style={{
+                                    height: "50px",
+                                    objectFit: "contain",
+                                    marginLeft: "-20px",
+                                }}
+                            />
+                        </a>
+                        Holiday Calendar
+                    </h2>
+                </div>
+
+                <div className={`holiday-dashboard-content`}>
+                    <div style={{ marginLeft: "95%", color: "#2C3E50" }}>
+                        {showCalendarPopup && (
+                            <div className="calendar-popup-box" ref={popupRef}>
+                                <h5 className="mb-2">Select Month & Year</h5>
+
+                                {/* Month Dropdown */}
+                                <select
+                                    className="form-select mb-2"
+                                    value={currentDate.getMonth()}
+                                    onChange={(e) => {
+                                        const newMonth = Number(e.target.value);
+                                        setCurrentDate(new Date(currentDate.getFullYear(), newMonth, 1));
+                                    }}
+                                >
+                                    {monthNames.map((m, index) => (
+                                        <option key={index} value={index}>{m}</option>
+                                    ))}
+                                </select>
+
+                                {/* Year Dropdown */}
+                                <select
+                                    className="form-select mb-2"
+                                    value={currentDate.getFullYear()}
+                                    onChange={(e) => {
+                                        const newYear = Number(e.target.value);
+                                        setCurrentDate(new Date(newYear, currentDate.getMonth(), 1));
+                                    }}
+                                >
+                                    {Array.from({ length: 10 }).map((_, i) => (
+                                        <option key={i} value={minYear + i}>
+                                            {minYear + i}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                    </div>
                     <div className="calendar">
                         <div className="calendar-header">
-                            {currentDate.getMonth() !== 0 && (
+
+                            {/* Hide Prev only if we are at minYear January */}
+                            {!(currentDate.getFullYear() === minYear && currentDate.getMonth() === 0) && (
                                 <button className="month-btn" onClick={prevMonth}>Prev</button>
                             )}
 
@@ -134,7 +263,8 @@ function Holiday({ navSize }) {
                                 {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                             </div>
 
-                            {currentDate.getMonth() !== 11 && (
+                            {/* Hide Next only if we are at maxYear December */}
+                            {!(currentDate.getFullYear() === maxYear && currentDate.getMonth() === 11) && (
                                 <button className="month-btn" onClick={nextMonth}>Next</button>
                             )}
                         </div>
@@ -158,8 +288,25 @@ function Holiday({ navSize }) {
                                             >
                                                 {day}
                                                 {day && notes[day] && (
-                                                    <div className="holiday-label" title={notes[day].holiday_name}>
-                                                        {notes[day].holiday_name}
+                                                    <div
+                                                        className="holiday-list"
+                                                        title={notes[day].map(h => h.holiday_name).join(", ")} // show on hover
+                                                    >
+                                                        {notes[day].slice(0, 2).map((h, idx) => (
+                                                            <div
+                                                                key={idx}
+                                                                className="holiday-chip"
+                                                                style={{ backgroundColor: generateColorFromName(h.holiday_name) }}
+                                                            >
+                                                                {h.holiday_name}
+                                                            </div>
+                                                        ))}
+
+                                                        {notes[day].length > 2 && (
+                                                            <div className="holiday-chip more-chip">
+                                                                +{notes[day].length - 2} more
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </td>
@@ -169,6 +316,28 @@ function Holiday({ navSize }) {
                             </tbody>
                         </table>
                     </div>
+
+                    {multiHolidayModal && (
+                        <div className="multi-modal-overlay" onClick={() => setMultiHolidayModal(false)}>
+                            <div className="multi-modal-content" onClick={(e) => e.stopPropagation()}>
+                                <h3>Holidays on {selectedDay} {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h3>
+                                <div
+                                    className="holiday-close-icon"
+                                    onClick={() => setMultiHolidayModal(false)}
+                                    title="Close"
+                                >
+                                    <i className="fa-solid fa-xmark"></i>
+                                </div>
+
+                                {selectedHolidayList.map((h, i) => (
+                                    <div key={i} className="multi-holiday-row">
+                                        <span>{h.holiday_name}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                 </div>
             </div>
         </div>
