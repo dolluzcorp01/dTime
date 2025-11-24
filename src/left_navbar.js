@@ -55,7 +55,6 @@ function LeftNavbar({ navSize, setNavSize }) {
             const data = await res.json();
             if (data.success) {
                 setAccessLevels(data.data);
-                console.log(data.data)
             }
         } catch (err) {
             console.error("❌ Error fetching access levels:", err);

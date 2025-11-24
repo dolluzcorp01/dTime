@@ -91,7 +91,6 @@ function MyLeaveRequests({ navSize }) {
             const res = await apiFetch("/api/Leave/my_leave_request_list");
             const data = await res.json();
             setRequests(data);
-            console.log("Fetched requests:", data);
         } catch (err) {
             console.error("❌ Fetch requests error:", err);
         }

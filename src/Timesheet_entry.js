@@ -34,7 +34,6 @@ const Timesheet_entry = ({ navSize }) => {
         try {
             const res = await apiFetch(`/api/Configuration/tasks/${project_id}`);
             const data = await res.json();
-            console.log(data);
             setTasks(Array.isArray(data) ? data : []);
             const selectedProj = projects.find((p) => p.project_id === project_id);
             if (selectedProj) setProjectName(selectedProj.project_name);

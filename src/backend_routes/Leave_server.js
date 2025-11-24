@@ -452,17 +452,28 @@ router.get("/my_leave_balance/:emp_id", (req, res) => {
 
     const query = `
         SELECT 
-            lt.leave_type_id, 
-            lt.leave_type,
-            lt.max_leave AS max_leaves,
-            (lt.max_leave - COALESCE(SUM(DATEDIFF(lr.end_date, lr.start_date) + 1), 0)) AS balance_leave
+        lt.leave_type_id, 
+        lt.leave_type,
+        lt.max_leave AS max_leaves,
+        (
+            lt.max_leave 
+            - COALESCE(
+                SUM(
+                    DATEDIFF(lr.end_date, lr.start_date) + 1 
+                    - (
+                        SELECT COUNT(*) 
+                        FROM holidays h
+                        WHERE h.holiday_date BETWEEN lr.start_date AND lr.end_date
+                    )
+                ), 
+            0)
+        ) AS balance_leave
         FROM leave_type lt
         LEFT JOIN leave_requests lr 
             ON lt.leave_type_id = lr.leave_type_id 
-            AND lr.emp_id = ? 
+            AND lr.emp_id = ?
             AND lr.leave_status != 'Canceled'
-        GROUP BY lt.leave_type_id
-    `;
+        GROUP BY lt.leave_type_id;`;
 
     db.query(query, [emp_id], (err, results) => {
         if (err) return res.status(500).json({ error: "Database error" });
