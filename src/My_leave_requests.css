@@ -232,3 +232,9 @@
         flex-direction: column;
     }
 }
+
+.disabled-datepicker {
+    background-color: #e5e7eb !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}

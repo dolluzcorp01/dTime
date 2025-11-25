@@ -1,0 +1,286 @@
+.leave-dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.leave-dashboard {
+    flex-grow: 1;
+    background: #f8f9fa;
+    padding: 30px 50px;
+    margin-top: 60px;
+    transition: margin-left 0.3s ease;
+}
+
+.leave-dashboard.full {
+    margin-left: 220px;
+}
+
+.leave-dashboard.icon-only {
+    margin-left: 60px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) 300px;
+    grid-auto-rows: auto;
+    gap: 20px;
+}
+
+.employee-leaves {
+    grid-column: span 2;
+}
+
+/* Cards */
+.card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+/* Big Count */
+.count {
+    font-size: 42px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 5px;
+}
+
+/* Card Types */
+.requests {
+    border-top: 4px solid #5a6ba2;
+}
+
+.approved {
+    border-top: 4px solid #4caf50;
+}
+
+.rejected {
+    border-top: 4px solid #ff9800;
+}
+
+/* holiday Dashboard */
+.holiday-card {
+    grid-row: span 3;
+    height: auto;
+}
+
+.next-holiday {
+    background: #ff9800;
+    color: white;
+    border-radius: 8px;
+    padding: 0;
+    grid-row: span 3;
+    min-height: 180px;
+}
+
+.holiday-btn {
+    width: 100%;
+    border: none;
+    background: #e65100;
+    color: white;
+    padding: 15px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+}
+
+.holiday-box {
+    padding: 12px;
+    text-align: center;
+}
+
+.next-holiday-name {
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+.next-holiday-info {
+    font-size: 18px;
+    margin-top: 10px;
+    color: #ffe0b2;
+    font-weight: 500;
+}
+
+.info-icon {
+    margin-left: 8px;
+    cursor: pointer;
+    position: relative;
+    font-size: 18px;
+}
+
+.holiday-tooltip {
+    display: none;
+    position: absolute;
+    top: 30px;
+    left: -150px;
+    background: #333;
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 6px;
+    width: max-content;
+    max-width: 220px;
+    font-size: 14px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.info-icon:hover .holiday-tooltip {
+    display: block;
+}
+
+.no-holiday {
+    font-size: 20px;
+}
+
+/* On Leave */
+.empty-box {
+    text-align: center;
+    margin-top: 40px;
+    color: #777;
+}
+
+/* Table */
+.table-section {
+    overflow-x: auto;
+    margin-top: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+th {
+    background: #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.no-data {
+    text-align: center;
+    padding: 20px;
+}
+
+.card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.card-header-row h2 {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.date-filter {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.more-box {
+    position: relative;
+    margin-top: 6px;
+    background: #333;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-block;
+    font-size: 14px;
+}
+
+.holiday-more-popup {
+    position: absolute;
+    top: -10px;
+    right: 110%;
+    transform: none;
+    background: #222;
+    padding: 12px;
+    border-radius: 6px;
+    color: #fff;
+    min-width: 220px;
+    z-index: 10;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.popup-item {
+    padding: 4px 0;
+    border-bottom: 1px solid #555;
+}
+
+.popup-item:last-child {
+    border-bottom: none;
+}
+
+.this-month-section {
+    background: #fff;
+    padding: 18px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    font-size: 15px;
+    margin-top: 18px;
+}
+
+.holiday-item {
+    margin: 6px 0;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #ddd;
+    color: #333;
+}
+
+.this-month-section h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 30px;
+    margin-top: 0px !important;
+}
+
+.holiday-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 4px;
+}
+
+.holiday-date {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 4px;
+}
+
+.holiday-for {
+    font-size: 13px;
+    color: #777;
+}
+
+.pie-container {
+    width: 230px;
+    height: 250px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

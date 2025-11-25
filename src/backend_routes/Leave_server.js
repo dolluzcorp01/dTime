@@ -610,4 +610,28 @@ router.put("/update_status/:id", (req, res) => {
     });
 });
 
+// Get Total Leaves (for dashboard table)
+router.get("/my_total_leaves/:emp_id", (req, res) => {
+    const { emp_id } = req.params;
+
+    const query = `
+        SELECT 
+            lr.leave_requests_id,
+            lt.leave_type,
+            lr.start_date,
+            lr.end_date,
+            lr.leave_status,
+            DATEDIFF(lr.end_date, lr.start_date) + 1 AS request_days
+        FROM leave_requests lr
+        LEFT JOIN leave_type lt ON lr.leave_type_id = lt.leave_type_id
+        WHERE lr.emp_id = ?
+        ORDER BY lr.start_date DESC
+    `;
+
+    db.query(query, [emp_id], (err, results) => {
+        if (err) return res.status(500).json({ error: "Database error" });
+        res.json(results);
+    });
+});
+
 module.exports = router;

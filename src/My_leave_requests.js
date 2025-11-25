@@ -2,7 +2,10 @@ import React, { useEffect, useState, useRef } from "react";
 import Swal from "sweetalert2";
 import { FaPaperclip } from "react-icons/fa";
 import { apiFetch, API_BASE } from "./utils/api";
+import DatePicker from "react-datepicker";
 import "./My_leave_requests.css";
+import "react-datepicker/dist/react-datepicker.css";
+import { de } from "date-fns/locale";
 
 function MyLeaveRequests({ navSize }) {
     const [empId, setEmpId] = useState(null);
@@ -24,6 +27,59 @@ function MyLeaveRequests({ navSize }) {
     const [leaveBalance, setLeaveBalance] = useState([]);
     const [leaveHistory, setLeaveHistory] = useState([]);
     const [approver, setApprover] = useState("");
+    const [holidayDates, setHolidayDates] = useState([]);
+
+    const fetchHolidays = async () => {
+        const month = new Date().getMonth() + 1;
+        const year = new Date().getFullYear();
+        try {
+            const res = await apiFetch(`/api/holiday/list?month=${month}&year=${year}&emp_id=${empId}`);
+            const data = await res.json();
+
+            const dates = [];
+            data.forEach(h => {
+                const start = new Date(h.holiday_date);
+                const end = h.holiday_end ? new Date(h.holiday_end) : start;
+                let cur = new Date(start);
+                while (cur <= end) {
+                    dates.push(new Date(cur).toDateString());
+                    cur.setDate(cur.getDate() + 1);
+                }
+            });
+
+            setHolidayDates(dates);
+            console.log("Fetched holidays:", data);
+        } catch (err) {
+            console.error("Fetch Holidays Error:", err);
+        }
+    };
+
+    const renderDayContents = (day, date) => {
+        const isHoliday = holidayDates.includes(date.toDateString());
+
+        if (isHoliday) {
+            return (
+                <span style={{
+                    background: "#ff4d4d",
+                    color: "#fff",
+                    borderRadius: "50%",
+                    padding: "4px",
+                    width: "28px",
+                    height: "28px",
+                    display: "flex",
+                    alignItems: "flex-start",
+                    justifyContent: "center",
+                    paddingTop: "2px",
+                    position: "relative",
+                    top: "-3px"
+                }}>
+                    H
+                </span>
+            );
+        }
+
+        return <span>{day}</span>;
+    };
 
     useEffect(() => {
         const id = localStorage.getItem("emp_id");
@@ -32,6 +88,7 @@ function MyLeaveRequests({ navSize }) {
 
     useEffect(() => {
         if (empId) {
+            fetchHolidays();
             setFormData((prev) => ({ ...prev, emp_id: empId }));
         }
     }, [empId]);
@@ -313,27 +370,18 @@ function MyLeaveRequests({ navSize }) {
                             <label>
                                 Start Date <span style={{ color: "red" }}>*</span>
                             </label>
-                            <input
-                                type="date"
-                                className="form-control"
-                                value={formData.start_date}
-                                min={new Date(new Date().setMonth(new Date().getMonth() - 1))
-                                    .toISOString()
-                                    .split("T")[0]} // allow 1 month before today
-                                onClick={(e) => {
-                                    // ✅ open calendar manually (only if supported)
-                                    if (typeof e.target.showPicker === "function") {
-                                        e.target.showPicker();
-                                    }
-                                }}
-                                onChange={(e) => {
-                                    const selectedDate = e.target.value;
+                            <DatePicker
+                                selected={formData.start_date ? new Date(formData.start_date) : null}
+                                onChange={(date) =>
                                     setFormData({
                                         ...formData,
-                                        start_date: selectedDate,
-                                        end_date: "", // reset end date if start date changes
-                                    });
-                                }}
+                                        start_date: date.toISOString().split("T")[0],
+                                        end_date: ""
+                                    })
+                                }
+                                minDate={new Date()}
+                                dateFormat="yyyy-MM-dd"
+                                renderDayContents={renderDayContents}
                             />
                         </div>
 
@@ -354,20 +402,19 @@ function MyLeaveRequests({ navSize }) {
                             <label>
                                 End Date <span style={{ color: "red" }}>*</span>
                             </label>
-                            <input
-                                id="endDate"
-                                type="date"
-                                className="form-control"
-                                placeholder="dd-mm-yyyy"
-                                value={formData.end_date}
-                                min={formData.start_date || new Date().toISOString().split("T")[0]}
+                            <DatePicker
+                                selected={formData.end_date ? new Date(formData.end_date) : null}
+                                onChange={(date) =>
+                                    setFormData({
+                                        ...formData,
+                                        end_date: date.toISOString().split("T")[0]
+                                    })
+                                }
+                                minDate={formData.start_date ? new Date(formData.start_date) : new Date()}
                                 disabled={!formData.start_date}
-                                onClick={(e) => {
-                                    if (typeof e.target.showPicker === "function") {
-                                        e.target.showPicker();
-                                    }
-                                }}
-                                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                                dateFormat="yyyy-MM-dd"
+                                renderDayContents={renderDayContents}
+                                className={!formData.start_date ? "disabled-datepicker" : ""}
                             />
                         </div>
 

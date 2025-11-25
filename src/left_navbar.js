@@ -15,7 +15,9 @@ import {
     FaChevronDown,
     FaChevronUp,
     FaChevronRight,
-    FaCalendarAlt
+    FaCalendarAlt,
+    FaChartBar,
+    FaClipboardList
 } from "react-icons/fa";
 import logo_eagle from "./assets/img/logo_eagle.png";
 import "./left_navbar.css";
@@ -151,10 +153,16 @@ function LeftNavbar({ navSize, setNavSize }) {
 
                         {isLeavemanagementOpen && (
                             <ul className="submenu">
+                                <li>
+                                    <NavLink to="/Leave_dashboard" className={({ isActive }) => isActive ? "active" : ""}>
+                                        <FaChartBar className="nav-icon" />
+                                        {navSize === "full" && "Leave Dashboard"}
+                                    </NavLink>
+                                </li>
                                 {hasPageAccess("Leave Approvals") && (
                                     <li>
                                         <NavLink to="/Leave_approvals" className={({ isActive }) => isActive ? "active" : ""}>
-                                            <FaChevronRight className="nav-icon" />
+                                            <FaClipboardList className="nav-icon" />
                                             {navSize === "full" && "Leave Approvals"}
                                         </NavLink>
                                     </li>

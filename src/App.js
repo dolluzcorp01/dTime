@@ -7,6 +7,7 @@ import Holiday from "./Holiday";
 import Leave_approvals from "./Leave_approvals";
 import My_leave_requests from "./My_leave_requests";
 import Timesheet_entry from "./Timesheet_entry";
+import Leave_dashboard from "./Leave_dashboard";
 
 function App() {
   const [navSize, setNavSize] = useState("full");
@@ -42,6 +43,7 @@ function App() {
               <Route path="/Leave_approvals" element={<Leave_approvals navSize={navSize} />} />
               <Route path="/My_leave_requests" element={<My_leave_requests navSize={navSize} />} />
               <Route path="/Timesheet_entry" element={<Timesheet_entry navSize={navSize} />} />
+              <Route path="/Leave_dashboard" element={<Leave_dashboard navSize={navSize} />} />
             </Routes>
           </div>
         </div>
