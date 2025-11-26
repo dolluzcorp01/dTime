@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { apiFetch } from "./utils/api";
-import Select from "react-select";
+import { FaTimes } from "react-icons/fa";
 import { Pie } from "react-chartjs-2";
 import {
     Chart as ChartJS,
@@ -30,6 +30,30 @@ const LeaveDashboard = ({ navSize }) => {
     const year = now.getFullYear();
 
     const [showAll, setShowAll] = useState(false);
+
+    const [showModal, setShowModal] = useState(false);
+    const [modalTitle, setModalTitle] = useState("");
+    const [modalData, setModalData] = useState([]);
+
+    const openModal = (type) => {
+        let filtered = [];
+
+        if (type === "Total Leave Requests") {
+            filtered = myLeaves;
+        }
+
+        if (type === "Approved Leave Requests") {
+            filtered = myLeaves.filter(l => l.leave_status === "Approved");
+        }
+
+        if (type === "Rejected Leave Requests") {
+            filtered = myLeaves.filter(l => l.leave_status === "Rejected");
+        }
+
+        setModalTitle(type);
+        setModalData(filtered);
+        setShowModal(true);
+    };
 
     const formatDate = (date) => {
         return new Date(date).toLocaleDateString("en-GB", {
@@ -96,21 +120,77 @@ const LeaveDashboard = ({ navSize }) => {
         <div className="leave-dashboard-container">
             <div className={`leave-dashboard ${navSize}`}>
                 <div className="dashboard-grid">
-                    {/* Requests Box */}
-                    <div className="card requests">
+
+                    <div className="card requests hover-grow" onClick={() => openModal("Total Leave Requests")}>
                         <h4>Total Leave Requests</h4>
                         <span className="count">{totalLeaveRequests}</span>
                     </div>
 
-                    <div className="card approved">
+                    <div className="card approved hover-grow" onClick={() => openModal("Approved Leave Requests")}>
                         <h4>Approved Leave Requests</h4>
                         <span className="count">{approvedLeaves}</span>
                     </div>
 
-                    <div className="card rejected">
+                    <div className="card rejected hover-grow" onClick={() => openModal("Rejected Leave Requests")}>
                         <h4>Rejected Leave Requests</h4>
                         <span className="count">{rejectedLeaves}</span>
                     </div>
+
+                    {showModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-box">
+                                <div className="modal-header">
+                                    <h2>{modalTitle}</h2>
+                                    <FaTimes
+                                        className="close-btn"
+                                        onClick={() => setShowModal(false)}
+                                    />
+                                </div>
+
+                                <table className="modal-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Leave ID</th>
+                                            <th>Leave Type</th>
+                                            <th>Start Date</th>
+                                            <th>End Date</th>
+                                            <th>Days</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        {modalData.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="6" className="no-data">No Records Found</td>
+                                            </tr>
+                                        ) : (
+                                            modalData.map(l => (
+                                                <tr key={l.leave_requests_id}>
+                                                    <td>{l.leave_requests_id}</td>
+                                                    <td>{l.leave_type}</td>
+                                                    <td>{formatDate(l.start_date)}</td>
+                                                    <td>{formatDate(l.end_date)}</td>
+                                                    <td>{l.no_of_days}</td>
+                                                    <td
+                                                        style={{
+                                                            fontWeight: "bold",
+                                                            color:
+                                                                l.leave_status === "Pending" ? "#007bff" :
+                                                                    l.leave_status === "Approved" ? "#4caf50" :
+                                                                        "#ff9800"
+                                                        }}
+                                                    >
+                                                        {l.leave_status}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
 
                     {/* holiday Dashboard */}
                     <div className="holiday-card">
