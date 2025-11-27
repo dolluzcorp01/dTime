@@ -16,13 +16,9 @@ function Holiday({ navSize }) {
     const navigate = useNavigate();
 
     const realYear = new Date().getFullYear();
-    const minYear = realYear - 5;
-    const maxYear = realYear + 5;
-
-    const [showCalendarPopup, setShowCalendarPopup] = useState(false);
-    const popupRef = React.useRef(null);
-    const iconRef = React.useRef(null);
-
+    const minYear = realYear - 1;
+    const maxYear = realYear + 1;
+ 
     const [multiHolidayModal, setMultiHolidayModal] = useState(false);
     const [selectedHolidayList, setSelectedHolidayList] = useState([]);
 
@@ -174,24 +170,6 @@ function Holiday({ navSize }) {
         setCurrentDate(new Date(y, m + 1, 1));
     };
 
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (
-                popupRef.current &&
-                !popupRef.current.contains(event.target) &&
-                iconRef.current &&
-                !iconRef.current.contains(event.target)
-            ) {
-                setShowCalendarPopup(false);
-            }
-        }
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
-
     return (
         <div className="holiday-container">
             <div className={`holiday-dashboard ${navSize}`}>
@@ -213,44 +191,6 @@ function Holiday({ navSize }) {
                 </div>
 
                 <div className={`holiday-dashboard-content`}>
-                    <div style={{ marginLeft: "95%", color: "#2C3E50" }}>
-                        {showCalendarPopup && (
-                            <div className="calendar-popup-box" ref={popupRef}>
-                                <h5 className="mb-2">Select Month & Year</h5>
-
-                                {/* Month Dropdown */}
-                                <select
-                                    className="form-select mb-2"
-                                    value={currentDate.getMonth()}
-                                    onChange={(e) => {
-                                        const newMonth = Number(e.target.value);
-                                        setCurrentDate(new Date(currentDate.getFullYear(), newMonth, 1));
-                                    }}
-                                >
-                                    {monthNames.map((m, index) => (
-                                        <option key={index} value={index}>{m}</option>
-                                    ))}
-                                </select>
-
-                                {/* Year Dropdown */}
-                                <select
-                                    className="form-select mb-2"
-                                    value={currentDate.getFullYear()}
-                                    onChange={(e) => {
-                                        const newYear = Number(e.target.value);
-                                        setCurrentDate(new Date(newYear, currentDate.getMonth(), 1));
-                                    }}
-                                >
-                                    {Array.from({ length: 10 }).map((_, i) => (
-                                        <option key={i} value={minYear + i}>
-                                            {minYear + i}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-
-                    </div>
                     <div className="calendar">
                         <div className="calendar-header">
 
@@ -267,6 +207,7 @@ function Holiday({ navSize }) {
                             {!(currentDate.getFullYear() === maxYear && currentDate.getMonth() === 11) && (
                                 <button className="month-btn" onClick={nextMonth}>Next</button>
                             )}
+
                         </div>
 
                         <table className="calendar-table">
