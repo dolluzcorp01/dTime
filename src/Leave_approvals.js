@@ -72,6 +72,7 @@ const Leave_approvals = ({ navSize }) => {
             const emp = employees.find(e => e.emp_id == empId);
 
             if (emp) {
+                fetchLeaveRequests();
                 setLoggedInEmp(emp);
                 if (!hasPageAccess("Leave Approvals", emp)) {
                     navigate("/login");
@@ -93,7 +94,14 @@ const Leave_approvals = ({ navSize }) => {
     // ✅ Fetch leave requests
     const fetchLeaveRequests = async () => {
         try {
-            const res = await apiFetch(`/api/leave/leave_requests_list`);
+            const id = localStorage.getItem("emp_id");
+
+            const res = await apiFetch(`/api/leave/leave_requests_list_filtered`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ emp_id: id })
+            });
+
             const data = await res.json();
             setLeaveRequests(data);
             setFilteredRequests(data);
@@ -103,10 +111,6 @@ const Leave_approvals = ({ navSize }) => {
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        fetchLeaveRequests();
-    }, []);
 
     // 🔹 Filter Options
     const filterOptions = [

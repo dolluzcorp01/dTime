@@ -564,27 +564,72 @@ router.get("/leave_approver/:emp_id", (req, res) => {
     });
 });
 
-
 // ✅ Get all leave requests
-router.get("/leave_requests_list", (req, res) => {
-    const query = `
-        SELECT lr.leave_requests_id, lr.emp_id, CONCAT(e.emp_first_name, ' ', e.emp_last_name) AS emp_name, e.emp_department, 
-        lt.leave_type, lr.start_date, lr.start_date_breakdown, 
-        lr.end_date, lr.end_date_breakdown, lr.leave_description, lr.attachment, 
-        lr.leave_status, lr.created_time, lr.status_updated_by, lr.status_updated_time
-        FROM leave_requests lr
-        LEFT JOIN leave_type lt ON lr.leave_type_id = lt.leave_type_id
-        LEFT JOIN dadmin.employee e ON lr.emp_id = e.emp_id
-        WHERE lr.leave_status != 'Canceled' 
-        ORDER BY lr.leave_requests_id DESC;
+router.post("/leave_requests_list_filtered", (req, res) => {
+    const { emp_id } = req.body;
+
+    if (!emp_id) {
+        return res.status(400).json({ error: "emp_id required" });
+    }
+
+    // Step 1: Get employee department
+    const deptQuery = `
+        SELECT emp_department 
+        FROM dadmin.employee 
+        WHERE emp_id = ?
     `;
 
-    db.query(query, (err, results) => {
-        if (err) {
-            console.error("❌ Error fetching leave requests:", err);
-            return res.status(500).json({ error: "Database error" });
-        }
-        res.json(results);
+    db.query(deptQuery, [emp_id], (err, deptRes) => {
+        if (err) return res.status(500).json({ error: "Database error 1" });
+        if (deptRes.length === 0) return res.json([]);
+
+        const department = deptRes[0].emp_department;
+
+        // Step 2: Get approval levels for department
+        const approvalQuery = `
+            SELECT level_1, level_2, level_3 
+            FROM leave_approval 
+            WHERE department_id = ?
+        `;
+
+        db.query(approvalQuery, [department], (err, levelRes) => {
+            if (err) return res.status(500).json({ error: "Database error 2" });
+            if (levelRes.length === 0) return res.json([]);
+
+            const levels = levelRes[0];
+
+            // Step 3: Filter relevant leave requests
+            const leaveQuery = `
+                SELECT lr.*, 
+                    CONCAT(e.emp_first_name, ' ', e.emp_last_name) AS emp_name,
+                    e.emp_department,
+                    lt.leave_type,
+                    DATEDIFF(NOW(), lr.created_time) AS days_passed
+                FROM leave_requests lr
+                LEFT JOIN leave_type lt ON lr.leave_type_id = lt.leave_type_id
+                LEFT JOIN dadmin.employee e ON lr.emp_id = e.emp_id
+                WHERE lr.leave_status != 'Canceled'
+                AND e.emp_department = ?
+                ORDER BY lr.leave_requests_id DESC
+            `;
+
+            db.query(leaveQuery, [department], (err, reqRes) => {
+                if (err) return res.status(500).json({ error: "Database error 3" });
+
+                // Step 4: Filter based on level and days
+                const finalList = reqRes.filter(req => {
+                    const days = req.days_passed;
+
+                    if (days <= 2 && emp_id == levels.level_1) return true;
+                    if (days > 2 && days <= 4 && emp_id == levels.level_2) return true;
+                    if (days > 4 && days <= 5 && emp_id == levels.level_3) return true;
+
+                    return false;  // Hide for others or auto-approved
+                });
+
+                res.json(finalList);
+            });
+        });
     });
 });
 
