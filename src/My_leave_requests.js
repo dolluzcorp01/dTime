@@ -88,6 +88,7 @@ function MyLeaveRequests({ navSize }) {
 
     useEffect(() => {
         if (empId) {
+            fetchRequests();
             fetchHolidays();
             setFormData((prev) => ({ ...prev, emp_id: empId }));
         }
@@ -124,15 +125,6 @@ function MyLeaveRequests({ navSize }) {
         }
     };
 
-    // Fetch all leave types + existing leave requests
-    useEffect(() => {
-        fetchApprover();
-        fetchLeaveTypes();
-        fetchRequests();
-        fetchLeaveBalance();
-        fetchLeaveHistory();
-    }, []);
-
     const fetchLeaveTypes = async () => {
         try {
             const res = await apiFetch("/api/Leave/leave_type_list");
@@ -145,13 +137,21 @@ function MyLeaveRequests({ navSize }) {
 
     const fetchRequests = async () => {
         try {
-            const res = await apiFetch("/api/Leave/my_leave_request_list");
+            const res = await apiFetch(`/api/Leave/my_leave_request_list/${empId}`);
             const data = await res.json();
             setRequests(data);
         } catch (err) {
             console.error("❌ Fetch requests error:", err);
         }
     };
+
+    // Fetch all leave types + existing leave requests
+    useEffect(() => {
+        fetchApprover();
+        fetchLeaveTypes();
+        fetchLeaveBalance();
+        fetchLeaveHistory();
+    }, []);
 
     const handleFileChange = (e) => setFile(e.target.files[0]);
 

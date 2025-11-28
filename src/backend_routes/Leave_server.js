@@ -37,15 +37,23 @@ router.get("/leave_type_list", (req, res) => {
     });
 });
 
-// ✅ 1. Get all requests
-router.get("/my_leave_request_list", (req, res) => {
+// ✅ Get leave requests only for a specific employee
+router.get("/my_leave_request_list/:empId", (req, res) => {
+    const { empId } = req.params;
+
+    if (!empId) {
+        return res.status(400).json({ error: "emp_id is required" });
+    }
+
     const query = `
         SELECT lr.*, lt.leave_type 
         FROM leave_requests lr 
         LEFT JOIN leave_type lt ON lr.leave_type_id = lt.leave_type_id
+        WHERE lr.emp_id = ?
         ORDER BY lr.created_time DESC
     `;
-    db.query(query, (err, results) => {
+
+    db.query(query, [empId], (err, results) => {
         if (err) return res.status(500).json({ error: "Database error" });
         res.json(results);
     });
