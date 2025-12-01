@@ -10,7 +10,7 @@ router.get("/all", (req, res) => {
   const query = `
     SELECT * 
     FROM employee
-    WHERE deleted_by IS NULL AND is_active = '1'
+    WHERE deleted_by IS NULL 
     ORDER BY created_time DESC 
   `;
 

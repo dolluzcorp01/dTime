@@ -14,13 +14,16 @@ router.post("/Verifylogin", (req, res) => {
         return res.status(400).json({ message: "Username and password are required" });
     }
 
-    const query = `SELECT * FROM employee WHERE emp_mail_id = ? AND is_active = 1 AND deleted_time IS NULL`;
+    const query = `SELECT * FROM employee WHERE emp_mail_id = ? AND deleted_time IS NULL`;
 
     db.query(query, [username], (err, results) => {
         if (err) return res.status(500).json({ message: "Database error" });
         if (results.length === 0) return res.status(401).json({ message: "Invalid credentials" });
 
         const employee = results[0];
+
+        if (results[0].app_dTime === 0)
+        return res.status(401).json({ message: "Access denied. You don't have access for dTime." });
 
         // 🔒 Check if password exists (Google users might not have one)
         if (!employee.account_pass || employee.account_pass.trim() === "") {
