@@ -1,6 +1,9 @@
 require("dotenv").config();
 const express = require("express");
 const { verifyJWT } = require('./Login_server');
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 const getDBConnection = require('../../config/db');
 const router = express.Router();
 
@@ -113,6 +116,81 @@ router.get("/all", (req, res) => {
       return res.status(500).json({ error: "Database error" });
     }
     res.json(results);
+  });
+});
+ 
+const profileUpload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      console.log("Upload destination:", process.env.EMP_PROFILE_UPLOAD_PATH);
+      cb(null, process.env.EMP_PROFILE_UPLOAD_PATH);
+    },
+    filename: (req, file, cb) => {
+      const empId = req.params.empId;
+      const ext = path.extname(file.originalname);
+      const fileName = `${empId}-${Date.now()}${ext}`;
+      console.log("Saving file as:", fileName);
+      cb(null, fileName);
+    },
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+});
+
+router.post("/upload-profile", profileUpload.single("profile"), verifyJWT, (req, res) => {
+  if (!req.emp_id) {
+    return res.status(401).json({ error: 'Unauthorized access' });
+  }
+  const empId = req.emp_id;
+  const uploadDir = process.env.EMP_PROFILE_UPLOAD_PATH;
+  const newFilePath = req.file ? req.file.path : null;
+  const relativePath = `User_profile_file_uploads/${req.file.filename}`;
+
+  if (!newFilePath) {
+    console.error("No file uploaded for empId:", empId);
+    return res.status(400).json({ error: "No file uploaded" });
+  }
+
+  if (fs.existsSync(uploadDir)) {
+    // Delete old files of the same user
+    fs.readdir(uploadDir, (err, files) => {
+      if (err) {
+        console.error("Error reading upload folder:", err);
+        return;
+      }
+
+      files.forEach((file) => {
+        if (file.startsWith(empId + "-")) {
+          const oldFilePath = path.join(uploadDir, file);
+          if (oldFilePath !== newFilePath) {
+            fs.unlink(oldFilePath, (err) => {
+              if (err) {
+                console.error("Error deleting old file:", oldFilePath, err);
+              } else {
+                console.log("Deleted old file:", oldFilePath);
+              }
+            });
+          }
+        }
+      });
+    });
+  }
+  // Update DB path
+  const updateQuery = `
+    UPDATE employee
+    SET emp_profile_img = ?
+    WHERE emp_id = ?
+  `;
+
+  db.query(updateQuery, [relativePath, empId], (err, result) => {
+    if (err) {
+      console.error("Database error while updating emp_profile_img:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    res.json({
+      message: "Profile image updated successfully",
+      profilePath: relativePath,
+    });
   });
 });
 
