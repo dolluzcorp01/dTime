@@ -224,6 +224,9 @@ function Header() {
                 text: "Your profile image has been updated successfully!",
             });
 
+            // Close modal after success
+            setIsModalOpen(false);
+
             // Update logged in user state
             setLoggedInEmp(prev => ({ ...prev, emp_profile_img: data.profilePath }));
 
