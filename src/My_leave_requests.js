@@ -8,11 +8,9 @@ import "react-datepicker/dist/react-datepicker.css";
 import { de } from "date-fns/locale";
 
 function MyLeaveRequests({ navSize }) {
-    const [empId, setEmpId] = useState(null);
     const [leaveTypes, setLeaveTypes] = useState([]);
     const [requests, setRequests] = useState([]);
     const [formData, setFormData] = useState({
-        emp_id: empId,
         leave_type_id: "",
         start_date: "",
         start_date_breakdown: "Full",
@@ -29,11 +27,25 @@ function MyLeaveRequests({ navSize }) {
     const [approver, setApprover] = useState("");
     const [holidayDates, setHolidayDates] = useState([]);
 
+    // Fetch all leave types + existing leave requests
+    useEffect(() => {
+        fetchApprover();
+        fetchLeaveTypes();
+        fetchLeaveBalance();
+        fetchLeaveHistory();
+        fetchRequests();
+        fetchHolidays();
+        setFormData((prev) => ({ ...prev }));
+    }, []);
+
     const fetchHolidays = async () => {
         const month = new Date().getMonth() + 1;
         const year = new Date().getFullYear();
         try {
-            const res = await apiFetch(`/api/holiday/list?month=${month}&year=${year}&emp_id=${empId}`);
+            const res = await apiFetch(`/api/holiday/list?month=${month}&year=${year}`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             const data = await res.json();
 
             const dates = [];
@@ -51,6 +63,71 @@ function MyLeaveRequests({ navSize }) {
             console.log("Fetched holidays:", data);
         } catch (err) {
             console.error("Fetch Holidays Error:", err);
+        }
+    };
+
+    const fetchApprover = async () => {
+        try {
+            const res = await apiFetch(`/api/Leave/leave_approver`, {
+                method: 'GET',
+                credentials: 'include',
+            });
+            const data = await res.json();
+            setApprover(data.approver);
+        } catch (err) {
+            console.error("❌ Fetch approver error:", err);
+        }
+    };
+
+    const fetchLeaveBalance = async () => {
+        try {
+            const res = await apiFetch(`/api/Leave/my_leave_balance`, {
+                method: 'GET',
+                credentials: 'include',
+            });
+            const data = await res.json();
+            setLeaveBalance(data);
+        } catch (err) {
+            console.error("❌ Fetch balance error:", err);
+        }
+    };
+
+    const fetchLeaveHistory = async () => {
+        try {
+            const res = await apiFetch(`/api/Leave/my_leave_history`, {
+                method: 'GET',
+                credentials: 'include',
+            });
+            const data = await res.json();
+            setLeaveHistory(data);
+        } catch (err) {
+            console.error("❌ Fetch history error:", err);
+        }
+    };
+
+    const fetchLeaveTypes = async () => {
+        try {
+            const res = await apiFetch("/api/Leave/leave_type_list", {
+                method: 'GET',
+                credentials: 'include',
+            });
+            const data = await res.json();
+            setLeaveTypes(data);
+        } catch (err) {
+            console.error("❌ Fetch leave types error:", err);
+        }
+    };
+
+    const fetchRequests = async () => {
+        try {
+            const res = await apiFetch(`/api/Leave/my_leave_request_list`, {
+                method: 'GET',
+                credentials: 'include',
+            });
+            const data = await res.json();
+            setRequests(data);
+        } catch (err) {
+            console.error("❌ Fetch requests error:", err);
         }
     };
 
@@ -81,78 +158,6 @@ function MyLeaveRequests({ navSize }) {
         return <span>{day}</span>;
     };
 
-    useEffect(() => {
-        const id = localStorage.getItem("emp_id");
-        setEmpId(id);
-    }, []);
-
-    useEffect(() => {
-        if (empId) {
-            fetchRequests();
-            fetchHolidays();
-            setFormData((prev) => ({ ...prev, emp_id: empId }));
-        }
-    }, [empId]);
-
-    const fetchApprover = async () => {
-        try {
-            const empId = localStorage.getItem("emp_id");
-            const res = await apiFetch(`/api/Leave/leave_approver/${empId}`);
-            const data = await res.json();
-            setApprover(data.approver);
-        } catch (err) {
-            console.error("❌ Fetch approver error:", err);
-        }
-    };
-
-    const fetchLeaveBalance = async () => {
-        try {
-            const res = await apiFetch(`/api/Leave/my_leave_balance/${formData.emp_id}`);
-            const data = await res.json();
-            setLeaveBalance(data);
-        } catch (err) {
-            console.error("❌ Fetch balance error:", err);
-        }
-    };
-
-    const fetchLeaveHistory = async () => {
-        try {
-            const res = await apiFetch(`/api/Leave/my_leave_history/${formData.emp_id}`);
-            const data = await res.json();
-            setLeaveHistory(data);
-        } catch (err) {
-            console.error("❌ Fetch history error:", err);
-        }
-    };
-
-    const fetchLeaveTypes = async () => {
-        try {
-            const res = await apiFetch("/api/Leave/leave_type_list");
-            const data = await res.json();
-            setLeaveTypes(data);
-        } catch (err) {
-            console.error("❌ Fetch leave types error:", err);
-        }
-    };
-
-    const fetchRequests = async () => {
-        try {
-            const res = await apiFetch(`/api/Leave/my_leave_request_list/${empId}`);
-            const data = await res.json();
-            setRequests(data);
-        } catch (err) {
-            console.error("❌ Fetch requests error:", err);
-        }
-    };
-
-    // Fetch all leave types + existing leave requests
-    useEffect(() => {
-        fetchApprover();
-        fetchLeaveTypes();
-        fetchLeaveBalance();
-        fetchLeaveHistory();
-    }, []);
-
     const handleFileChange = (e) => setFile(e.target.files[0]);
 
     const [removeOldAttachment, setRemoveOldAttachment] = useState(false);
@@ -164,7 +169,6 @@ function MyLeaveRequests({ navSize }) {
 
     const handleCancelEdit = () => {
         setFormData({
-            emp_id: empId,
             leave_type_id: "",
             start_date: "",
             start_date_breakdown: "Full",
@@ -180,12 +184,7 @@ function MyLeaveRequests({ navSize }) {
     };
 
     const handleSave = async () => {
-        const { emp_id, leave_type_id, start_date, end_date } = formData;
-
-        if (!emp_id) {
-            Swal.fire("Error", "Employee ID is missing. Please log in again.", "error");
-            return;
-        }
+        const { leave_type_id, start_date, end_date } = formData;
 
         if (!leave_type_id || !start_date || !end_date) {
             Swal.fire("Validation Error", "Leave type, start date, and end date are required", "error");
@@ -199,7 +198,10 @@ function MyLeaveRequests({ navSize }) {
 
         // ✅ 2. Fetch user's leave balance
         try {
-            const res = await apiFetch(`/api/Leave/my_leave_balance/${emp_id}`);
+            const res = await apiFetch(`/api/Leave/my_leave_balance`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             const balances = await res.json();
 
             // ✅ 3. Find selected leave type's balance
@@ -233,7 +235,12 @@ function MyLeaveRequests({ navSize }) {
                 : "/api/Leave/add_my_leave_request";
             const method = editId ? "PUT" : "POST";
 
-            const saveRes = await apiFetch(url, { method, body: formDataObj });
+            const saveRes = await apiFetch(url, {
+                method,
+                body: formDataObj,
+                headers: { "Content-Type": "application/json" },
+                credentials: 'include',
+            });
             const data = await saveRes.json();
 
             if (data.success) {
@@ -252,7 +259,6 @@ function MyLeaveRequests({ navSize }) {
 
     const handleEdit = (item) => {
         setFormData({
-            emp_id: item.emp_id,
             leave_type_id: item.leave_type_id,
             start_date: formatDate(item.start_date),
             start_date_breakdown: item.start_date_breakdown,
@@ -276,16 +282,11 @@ function MyLeaveRequests({ navSize }) {
         });
 
         if (confirm.isConfirmed) {
-            if (!empId) {
-                Swal.fire("Error", "Employee ID is missing. Please log in again.", "error");
-                return;
-            }
-
             try {
                 const res = await apiFetch(`/api/Leave/delete_my_leave_request/${id}`, {
                     method: "DELETE",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ canceled_by: empId }),
+                    credentials: 'include',
                 });
                 const data = await res.json();
                 if (data.success) {
@@ -308,16 +309,11 @@ function MyLeaveRequests({ navSize }) {
         });
 
         if (confirm.isConfirmed) {
-            if (!empId) {
-                Swal.fire("Error", "Employee ID is missing. Please log in again.", "error");
-                return;
-            }
-
             try {
                 const res = await apiFetch(`/api/Leave/cancel_my_leave_request/${id}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ canceled_by: empId }),
+                    credentials: 'include',
                 });
                 const data = await res.json();
 

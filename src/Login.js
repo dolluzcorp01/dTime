@@ -55,14 +55,11 @@ function Login() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password }),
+                credentials: 'include',
             });
             const data = await res.json();
 
             if (!res.ok) throw new Error(data.message || "Login failed");
-
-            // ✅ Store emp_id and emp_access_level in localStorage
-            localStorage.setItem("emp_id", data.employee.emp_id);
-            localStorage.setItem("emp_access_level", data.employee.emp_access_level);
 
             showToast("Login Successful! Redirecting...");
 
@@ -92,7 +89,8 @@ function Login() {
             const res = await apiFetch("/api/login/verify-old-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ emp_id: localStorage.getItem("emp_id"), oldPass }),
+                body: JSON.stringify({ oldPass }),
+                credentials: 'include',
             });
             const data = await res.json();
 
@@ -116,17 +114,13 @@ function Login() {
         }
 
         try {
-            // ✅ Get emp_id if available, otherwise use email
-            const emp_id = localStorage.getItem("emp_id") || null;
-
-            const bodyData = emp_id
-                ? { emp_id, newPass }
-                : { email, newPass }; // fallback to email if emp_id is missing
+            const bodyData = { email, newPass };
 
             const res = await apiFetch("/api/login/update-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(bodyData),
+                credentials: 'include',
             });
 
             const data = await res.json();
@@ -135,8 +129,6 @@ function Login() {
 
             Swal.fire({ icon: "success", title: "Password updated!" });
 
-            // ✅ Clear localStorage/email if needed and go back to login
-            if (!emp_id) setEmail("");
             setMode("login");
 
         } catch (err) {
@@ -150,6 +142,7 @@ function Login() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, otp }),
+                credentials: 'include',
             });
 
             const data = await res.json();
@@ -189,6 +182,7 @@ function Login() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
+                credentials: 'include',
             });
 
             const data = await res.json();

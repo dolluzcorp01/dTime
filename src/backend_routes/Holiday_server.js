@@ -1,13 +1,19 @@
 require("dotenv").config();
 const express = require("express");
+const { verifyJWT } = require('./Login_server');
 const getDBConnection = require('../../config/db');
 const router = express.Router();
 
 const db = getDBConnection('dTime'); // ✅ Connect to dTime DB
 
 // ✅ Get Holidays for the month
-router.get("/list", (req, res) => {
-    const { month, year, emp_id } = req.query;
+router.get("/list", verifyJWT, (req, res) => {
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    const emp_id = req.emp_id;
+    const { month, year } = req.query;
 
     const query = `
         SELECT 

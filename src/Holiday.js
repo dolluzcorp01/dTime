@@ -12,57 +12,38 @@ function Holiday({ navSize }) {
     const [holidayList, setHolidayList] = useState([]);
     const [loggedInEmp, setLoggedInEmp] = useState(null);
     const [employees, setEmployees] = useState([]);
-    const [empId, setEmpId] = useState(null);
     const navigate = useNavigate();
 
     const realYear = new Date().getFullYear();
     const minYear = realYear - 1;
     const maxYear = realYear + 1;
- 
+
     const [multiHolidayModal, setMultiHolidayModal] = useState(false);
     const [selectedHolidayList, setSelectedHolidayList] = useState([]);
 
-
     useEffect(() => {
-        fetchEmployees();
+        fetchloginedEmployees();
+        fetchHolidays();
     }, []);
 
-    useEffect(() => {
-        const id = localStorage.getItem("emp_id");
-        setEmpId(id);
-    }, []);
-
-    useEffect(() => {
-        if (empId && employees.length > 0) {
-            const emp = employees.find(e => e.emp_id == empId);
-            if (emp) {
-                setLoggedInEmp(emp);
-                if ((emp.emp_access_level !== "Admin" && emp.emp_access_level !== "Sub Admin")) {
-                    navigate("/login");
-                }
-            }
-        }
-    }, [empId, employees]);
-
-    useEffect(() => {
-        if (empId && employees.length > 0) {
-            const emp = employees.find(e => e.emp_id == empId);
-            if (emp) {
-                setLoggedInEmp(emp);
-                if (emp.emp_access_level !== "Admin" && emp.emp_access_level !== "Sub Admin") {
-                    navigate("/login");
-                }
-            }
-
-            fetchHolidays();
-        }
-    }, [empId, employees, currentDate]);
-
-    const fetchEmployees = async () => {
+    const fetchloginedEmployees = async () => {
         try {
-            const res = await apiFetch(`/api/employee/all`);
+            const res = await apiFetch(`/api/employee/logined_employee`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             const data = await res.json();
-            setEmployees(data);
+
+            if (data?.message === "Access Denied. No Token Provided!" ||
+                data?.message === "Invalid Token") {
+                navigate("/login");
+                return;
+            }
+
+            if (data[0].emp_id) {
+                setLoggedInEmp(data[0]);
+            }
+
         } catch (err) {
             console.error("Error fetching employees:", err);
         }
@@ -73,7 +54,10 @@ function Holiday({ navSize }) {
         const year = currentDate.getFullYear();
 
         try {
-            const res = await apiFetch(`/api/holiday/list?month=${month}&year=${year}&emp_id=${empId}`);
+            const res = await apiFetch(`/api/holiday/list?month=${month}&year=${year}`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             const data = await res.json();
             setHolidayList(data);
 

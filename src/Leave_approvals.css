@@ -1,6 +1,7 @@
 .leave-requests-container {
     display: flex;
     min-height: 100vh;
+    overflow: hidden
 }
 
 .leave-requests-dashboard {
@@ -8,7 +9,7 @@
     background: #f8f9fa;
     padding: 30px 50px;
     margin-top: 60px;
-    transition: margin-left 0.3s ease;
+    overflow-x: hidden;
 }
 
 .leave-requests-dashboard.full {
@@ -55,6 +56,9 @@
 .table-wrapper {
     width: 100%;
     overflow-x: auto;
+    position: relative;
+    z-index: 1;
+    padding-bottom: 10px;
 }
 
 .leave-table {

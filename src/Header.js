@@ -14,7 +14,6 @@ function Header() {
     const [startTime, setStartTime] = useState(null);
     const [loggedInEmp, setLoggedInEmp] = useState(null);
     const [employees, setEmployees] = useState([]);
-    const [empId, setEmpId] = useState(null);
     const [showEmpMenu, setShowEmpMenu] = useState(false);
     const [isDropdownHovered, setIsDropdownHovered] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,33 +36,32 @@ function Header() {
     }
 
     useEffect(() => {
-        const id = localStorage.getItem("emp_id");
-        setEmpId(id);
+        fetchloginedEmployees();
     }, []);
 
-    useEffect(() => {
-        const fetchEmployees = async () => {
-            try {
-                const res = await apiFetch("/api/employee/all");
-                const data = await res.json();
-                setEmployees(data);
-            } catch (err) {
-                console.error("Error fetching employees:", err);
+    const fetchloginedEmployees = async () => {
+        try {
+            const res = await apiFetch(`/api/employee/logined_employee`, {
+                method: 'GET',
+                credentials: 'include',
+            });
+            const data = await res.json();
+
+            if (data?.message === "Access Denied. No Token Provided!" ||
+                data?.message === "Invalid Token") {
+                navigate("/login");
+                return;
             }
-        };
 
-        fetchEmployees();
-    }, []);
-
-    useEffect(() => {
-        if (empId && employees.length > 0) {
-            const emp = employees.find(e => e.emp_id == empId);
-            if (emp) {
-                setLoggedInEmp(emp);
+            if (data[0].emp_id) {
+                setLoggedInEmp(data[0]);
                 fetchPunchHistory();
             }
+
+        } catch (err) {
+            console.error("Error fetching employees:", err);
         }
-    }, [empId, employees]);
+    };
 
     useEffect(() => {
         let interval = null;
@@ -86,7 +84,10 @@ function Header() {
 
     const fetchPunchHistory = async () => {
         try {
-            const res = await apiFetch(`/api/punch/history/${empId}`);
+            const res = await apiFetch(`/api/punch/history`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             const data = await res.json();
 
             // Group data by date (e.g., "Monday (16-10-2025)")
@@ -123,7 +124,7 @@ function Header() {
             const res = await apiFetch("/api/punch/punch-in", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ emp_id: empId })
+                credentials: 'include',
             });
             const data = await res.json();
             if (data.success) {
@@ -135,7 +136,7 @@ function Header() {
             const res = await apiFetch("/api/punch/punch-out", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ emp_id: empId })
+                credentials: 'include',
             });
             const data = await res.json();
             if (data.success) {
@@ -207,9 +208,10 @@ function Header() {
         formDataToSend.append("profile", selectedFile);
 
         try {
-            const res = await apiFetch(`/api/employee/upload-profile/${empId}`, {
+            const res = await apiFetch(`/api/employee/upload-profile`, {
                 method: "POST",
                 body: formDataToSend,
+                credentials: 'include',
             });
 
             const data = await res.json();
@@ -236,6 +238,17 @@ function Header() {
                 text: err.message,
             });
         }
+    };
+
+    const handleLogout = async () => {
+        await apiFetch(`/api/login/logout`, {
+            method: "POST",
+            credentials: "include",
+        });
+
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "/login";
     };
 
     return (
@@ -279,13 +292,17 @@ function Header() {
                         <div
                             className="emp-circle"
                             onClick={() => setShowEmpMenu(!showEmpMenu)}
+                            onMouseEnter={() => setIsDropdownHovered(true)}
+                            onMouseLeave={() => setIsDropdownHovered(false)}
                             style={{
-                                backgroundColor: loggedInEmp.emp_profile_img ? "transparent" : stringToColor(loggedInEmp.emp_first_name + " " + loggedInEmp.emp_last_name),
+                                backgroundColor: loggedInEmp.emp_profile_img
+                                    ? "transparent"
+                                    : loggedInEmp.profile_color ?? stringToColor(loggedInEmp.emp_first_name + " " + loggedInEmp.emp_last_name),
                                 color: "#fff",
                                 fontWeight: "bold",
-                                fontSize: "16px",
-                                width: "30px",
-                                height: "30px",
+                                fontSize: "14px",
+                                width: "32px",
+                                height: "32px",
                                 borderRadius: "50%",
                                 display: "flex",
                                 alignItems: "center",
@@ -296,12 +313,23 @@ function Header() {
                         >
                             {loggedInEmp.emp_profile_img ? (
                                 <img
-                                    src={`${EMP_PROFILE_FILE_BASE}/${loggedInEmp.emp_profile_img.replace(/\\/g, "/")}`}
+                                    src={
+                                        loggedInEmp.emp_profile_img.startsWith("data:")
+                                            ? loggedInEmp.emp_profile_img
+                                            : `${EMP_PROFILE_FILE_BASE}/${loggedInEmp.emp_profile_img.replace(/\\/g, "/")}`
+                                    }
                                     alt="Profile"
                                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                                 />
                             ) : (
-                                loggedInEmp.emp_first_name.charAt(0).toUpperCase() + loggedInEmp.emp_last_name.charAt(0).toUpperCase()
+                                // If hovering → show camera icon. Else → show initials.
+                                isDropdownHovered ? (
+                                    <FaCamera color="white" />
+                                ) : (
+                                    loggedInEmp.profile_letters ??
+                                    (loggedInEmp.emp_first_name.charAt(0).toUpperCase() +
+                                        loggedInEmp.emp_last_name.charAt(0).toUpperCase())
+                                )
                             )}
                         </div>
                     </>
@@ -319,7 +347,9 @@ function Header() {
                             <div
                                 className="emp-profile-circle"
                                 style={{
-                                    backgroundColor: loggedInEmp.emp_profile_img ? "transparent" : stringToColor(loggedInEmp.emp_first_name + " " + loggedInEmp.emp_last_name),
+                                    backgroundColor: loggedInEmp.emp_profile_img
+                                        ? "transparent"
+                                        : loggedInEmp.profile_color ?? stringToColor(loggedInEmp.emp_first_name + " " + loggedInEmp.emp_last_name),
                                     color: "#fff",
                                     fontWeight: "bold",
                                     fontSize: "18px",
@@ -338,12 +368,22 @@ function Header() {
                             >
                                 {loggedInEmp.emp_profile_img ? (
                                     <img
-                                        src={`${EMP_PROFILE_FILE_BASE}/${loggedInEmp.emp_profile_img.replace(/\\/g, "/")}`}
+                                        src={
+                                            loggedInEmp.emp_profile_img.startsWith("data:")
+                                                ? loggedInEmp.emp_profile_img
+                                                : `${EMP_PROFILE_FILE_BASE}/${loggedInEmp.emp_profile_img.replace(/\\/g, "/")}`
+                                        }
                                         alt="Profile"
                                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                                     />
                                 ) : (
-                                    isDropdownHovered ? <FaCamera color="white" /> : loggedInEmp.emp_first_name.charAt(0).toUpperCase() + loggedInEmp.emp_last_name.charAt(0).toUpperCase()
+                                    isDropdownHovered ? (
+                                        <FaCamera color="white" />
+                                    ) : (
+                                        loggedInEmp.profile_letters ??
+                                        (loggedInEmp.emp_first_name.charAt(0).toUpperCase() +
+                                            loggedInEmp.emp_last_name.charAt(0).toUpperCase())
+                                    )
                                 )}
                             </div>
 
@@ -364,10 +404,7 @@ function Header() {
                             <i className="fa fa-key"></i> Change Password
                         </button>
                         <button
-                            onClick={() => {
-                                localStorage.clear();
-                                window.location.reload();
-                            }}
+                            onClick={handleLogout}
                             className="emp-dropdown-btn logout-btn"
                         >
                             <FaSignOutAlt

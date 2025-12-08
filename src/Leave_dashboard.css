@@ -298,7 +298,7 @@ td {
 }
 
 /* Modal */
-.modal-overlay {
+.leave-dashboard-modal-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.55);
@@ -308,7 +308,7 @@ td {
     z-index: 9999;
 }
 
-.modal-box {
+.leave-dashboard-modal-box {
     background: white;
     width: 65%;
     max-height: 80vh;
@@ -318,7 +318,7 @@ td {
     animation: fadeIn 0.3s ease;
 }
 
-.modal-header {
+.leave-dashboard-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -331,12 +331,12 @@ td {
     font-size: 18px;
 }
 
-.modal-table {
+.leave-dashboard-modal-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.modal-table th {
+.leave-dashboard-modal-table th {
     padding: 10px;
     background: #efefef;
 }

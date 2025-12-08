@@ -20,7 +20,10 @@ const Timesheet_entry = ({ navSize }) => {
     // 🔹 Fetch all projects
     const fetchProjects = async () => {
         try {
-            const res = await apiFetch("/api/Configuration/all");
+            const res = await apiFetch("/api/Configuration/all", {
+                method: 'GET',
+                credentials: 'include',
+            });
             const data = await res.json();
             setProjects(data);
         } catch (err) {
@@ -32,7 +35,10 @@ const Timesheet_entry = ({ navSize }) => {
     const fetchTasks = async (project_id) => {
         setSelectedProject(project_id);
         try {
-            const res = await apiFetch(`/api/Configuration/tasks/${project_id}`);
+            const res = await apiFetch(`/api/Configuration/tasks/${project_id}`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             const data = await res.json();
             setTasks(Array.isArray(data) ? data : []);
             const selectedProj = projects.find((p) => p.project_id === project_id);
@@ -77,7 +83,10 @@ const Timesheet_entry = ({ navSize }) => {
 
     useEffect(() => {
         const fetchPunchHistory = async () => {
-            const res = await apiFetch(`/api/punch/history/${localStorage.getItem("emp_id")}`);
+            const res = await apiFetch(`/api/punch/history`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             const data = await res.json();
             setWeeklyPunchHours(calculateWeeklyPunchHours(data));
         };

@@ -21,45 +21,46 @@ import {
 } from "react-icons/fa";
 import logo_eagle from "./assets/img/logo_eagle.png";
 import "./left_navbar.css";
+import { de } from "date-fns/locale";
 
 function LeftNavbar({ navSize, setNavSize }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isTimesheetOpen, setTimesheetOpen] = useState(true);
     const [isLeavemanagementOpen, setLeavemanagementOpen] = useState(true);
-    const [employees, setEmployees] = useState([]);
     const [loggedInEmp, setLoggedInEmp] = useState(null);
-    const [empId, setEmpId] = useState(null);
     const navigate = useNavigate();
     const [accessLevels, setAccessLevels] = useState([]);
 
     useEffect(() => {
-        fetchEmployees();
+        fetchloginedEmployees();
         fetchAccessLevels();
     }, [navigate]);
 
-    useEffect(() => {
-        const id = localStorage.getItem("emp_id");
-        setEmpId(id);
-    }, []);
-
-    useEffect(() => {
-        if (empId && employees.length > 0) {
-            const emp = employees.find(e => e.emp_id == empId);
-            if (emp) {
-                setLoggedInEmp(emp);
-            }
-        }
-    }, [empId, employees]);
-
-    const fetchAccessLevels = async () => {
+    const fetchloginedEmployees = async () => {
         try {
-            const res = await apiFetch(`/api/login/get-access`);
+            const res = await apiFetch(`/api/employee/logined_employee`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             const data = await res.json();
-            if (data.success) {
-                setAccessLevels(data.data);
+
+            if (data?.message === "Access Denied. No Token Provided!" ||
+                data?.message === "Invalid Token") {
+                navigate("/login");
+                return;
             }
+
+            if (data[0].emp_id) {
+                setLoggedInEmp(data[0]);
+                if (loggedInEmp && accessLevels.length > 0) {
+                    if (!hasPageAccess("Leave Approvals")) {
+                        navigate("/login");
+                    }
+                }
+            }
+
         } catch (err) {
-            console.error("❌ Error fetching access levels:", err);
+            console.error("Error fetching employees:", err);
         }
     };
 
@@ -79,19 +80,35 @@ function LeftNavbar({ navSize, setNavSize }) {
         return false;
     };
 
-    const fetchEmployees = async () => {
+    const fetchAccessLevels = async () => {
         try {
-            const res = await apiFetch(`/api/employee/all`);
+            const res = await apiFetch(`/api/login/get-access`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             const data = await res.json();
-            setEmployees(data);
+            if (data.success) {
+                setAccessLevels(data.data);
+            }
         } catch (err) {
-            console.error("Error fetching employees:", err);
+            console.error("❌ Error fetching access levels:", err);
         }
     };
 
     const handleNavSizeChange = (size) => {
         setNavSize(size);
         setDropdownOpen(false);
+    };
+
+    const handleLogout = async () => {
+        await apiFetch(`/api/login/logout`, {
+            method: "POST",
+            credentials: "include",
+        });
+
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "/login";
     };
 
     return (
@@ -201,8 +218,7 @@ function LeftNavbar({ navSize, setNavSize }) {
                         {/* Logout Button Below */}
                         {navSize !== "hidden" && (
                             <NavLink
-                                to="/Login"
-                                onClick={() => localStorage.clear()}
+                                onClick={handleLogout}
                                 className="logout-link"
                             >
                                 <FaSignOutAlt

@@ -1,10 +1,38 @@
 require("dotenv").config();
 const express = require("express");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const getDBConnection = require('../../config/db');
 const router = express.Router();
 const nodemailer = require("nodemailer");
 const db = getDBConnection("dadmin");
+
+// 🔹 Middleware to verify JWT
+const JWT_SECRET = process.env.JWT_SECRET;
+const verifyJWT = (req, res, next) => {
+    const token = req.cookies?.token;
+    if (!token) {
+        return res.status(403).json({ message: 'Access Denied. No Token Provided!' });
+    }
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(403).json({ message: 'Invalid Token' });
+        }
+        req.emp_id = decoded.emp_id;
+        next();
+    });
+};
+
+// 🔹 LOGOUT the JWT
+router.post("/logout", (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None"
+    });
+
+    return res.json({ success: true, message: "Logged out successfully" });
+});
 
 // 🔹 LOGIN (with bcrypt verification)
 router.post("/Verifylogin", (req, res) => {
@@ -23,7 +51,7 @@ router.post("/Verifylogin", (req, res) => {
         const employee = results[0];
 
         if (results[0].app_dTime === 0)
-        return res.status(401).json({ message: "Access denied. You don't have access for dTime." });
+            return res.status(401).json({ message: "Access denied. You don't have access for dTime." });
 
         // 🔒 Check if password exists (Google users might not have one)
         if (!employee.account_pass || employee.account_pass.trim() === "") {
@@ -36,18 +64,25 @@ router.post("/Verifylogin", (req, res) => {
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
-        // ✅ Successful login
-        return res.json({ message: "Login successful", employee });
+        // 🔹 CREATE JWT TOKEN
+        const token = jwt.sign({ emp_id: employee.emp_id }, JWT_SECRET);
+        res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'None' });
+
+        return res.json({
+            success: true,
+            message: "Login successful",
+        });
     });
 });
 
 // ✅ VERIFY OLD PASSWORD (with bcrypt)
 router.post("/verify-old-password", (req, res) => {
-    const { emp_id, oldPass } = req.body;
-
-    if (!emp_id) {
-        return res.status(400).json({ message: "Employee session expired" });
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
     }
+
+    const emp_id = req.emp_id;
+    const { oldPass } = req.body;
 
     const query = `SELECT * FROM employee WHERE emp_id = ? AND deleted_time IS NULL`;
 
@@ -69,7 +104,12 @@ router.post("/verify-old-password", (req, res) => {
 
 // ✅ UPDATE PASSWORD (encrypt before saving)
 router.post("/update-password", (req, res) => {
-    const { emp_id, email, newPass } = req.body;
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    const emp_id = req.emp_id;
+    const { email, newPass } = req.body;
 
     if (!emp_id && !email) {
         return res.status(400).json({ message: "Employee info expired" });
@@ -207,4 +247,4 @@ router.get("/get-access", (req, res) => {
     });
 });
 
-module.exports = router;
+module.exports = { router, verifyJWT };

@@ -24,29 +24,50 @@ const Leave_approvals = ({ navSize }) => {
     const [selectedIds, setSelectedIds] = useState([]);
     const [isBulkReject, setIsBulkReject] = useState(false);
     const rowsPerPage = 10;
-    const [employees, setEmployees] = useState([]);
     const [loggedInEmp, setLoggedInEmp] = useState(null);
-    const [empId, setEmpId] = useState(null);
     const navigate = useNavigate();
     const [accessLevels, setAccessLevels] = useState([]);
 
-    const fetchAccessLevels = async () => {
+    useEffect(() => {
+        fetchAccessLevels();
+        fetchloginedEmployees();
+    }, [navigate]);
+
+    const fetchloginedEmployees = async () => {
         try {
-            const res = await apiFetch(`/api/login/get-access`);
+            const res = await apiFetch(`/api/employee/logined_employee`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             const data = await res.json();
-            if (data.success) {
-                setAccessLevels(data.data);
+
+            if (data?.message === "Access Denied. No Token Provided!" ||
+                data?.message === "Invalid Token") {
+                navigate("/login");
+                return;
             }
+
+            if (data[0].emp_id) {
+                setLoggedInEmp(data[0]);
+                fetchLeaveRequests();
+                if (loggedInEmp && accessLevels.length > 0) {
+                    if (!hasPageAccess("Leave Approvals")) {
+                        navigate("/login");
+                    }
+                }
+            }
+
         } catch (err) {
-            console.error("❌ Error fetching access levels:", err);
+            console.error("Error fetching employees:", err);
         }
     };
 
-    const hasPageAccess = (pageName, empData = loggedInEmp) => {
-        if (!empData || accessLevels.length === 0) return false;
+    const hasPageAccess = (pageName) => {
+        if (!loggedInEmp || accessLevels.length === 0) return false;
 
-        const role = empData.emp_access_level;
-        const page = accessLevels.find((p) => p.page_name === pageName);
+        const role = loggedInEmp.emp_access_level; // Admin, Sub Admin, Manager, User
+
+        const page = accessLevels.find(p => p.page_name === pageName);
         if (!page) return false;
 
         if (role === "Admin") return page.admin_access === 1;
@@ -57,49 +78,28 @@ const Leave_approvals = ({ navSize }) => {
         return false;
     };
 
-    useEffect(() => {
-        fetchEmployees();
-        fetchAccessLevels();
-    }, [navigate]);
-
-    useEffect(() => {
-        const id = localStorage.getItem("emp_id");
-        setEmpId(id);
-    }, []);
-
-    useEffect(() => {
-        if (empId && employees.length > 0 && accessLevels.length > 0) {
-            const emp = employees.find(e => e.emp_id == empId);
-
-            if (emp) {
-                fetchLeaveRequests();
-                setLoggedInEmp(emp);
-                if (!hasPageAccess("Leave Approvals", emp)) {
-                    navigate("/login");
-                }
-            }
-        }
-    }, [empId, employees, accessLevels]);
-
-    const fetchEmployees = async () => {
+    const fetchAccessLevels = async () => {
         try {
-            const res = await apiFetch(`/api/employee/all`);
+            const res = await apiFetch(`/api/login/get-access`, {
+                method: 'GET',
+                credentials: 'include',
+            });
             const data = await res.json();
-            setEmployees(data);
+            if (data.success) {
+                setAccessLevels(data.data);
+            }
         } catch (err) {
-            console.error("Error fetching employees:", err);
+            console.error("❌ Error fetching access levels:", err);
         }
     };
 
     // ✅ Fetch leave requests
     const fetchLeaveRequests = async () => {
         try {
-            const id = localStorage.getItem("emp_id");
-
             const res = await apiFetch(`/api/leave/leave_requests_list_filtered`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ emp_id: id })
+                credentials: 'include',
             });
 
             const data = await res.json();
@@ -195,7 +195,7 @@ const Leave_approvals = ({ navSize }) => {
             const res = await apiFetch(`/api/leave/update_status/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status, reason, updated_by: empId }),
+                body: JSON.stringify({ status, reason }),
             });
 
             if (res.ok) {

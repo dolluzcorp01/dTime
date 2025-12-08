@@ -35,6 +35,56 @@ const LeaveDashboard = ({ navSize }) => {
     const [modalTitle, setModalTitle] = useState("");
     const [modalData, setModalData] = useState([]);
 
+    useEffect(() => {
+        fetchCounts();
+        fetchHolidays();
+        fetchLeaveBalance();
+    }, []);
+
+    const fetchCounts = async () => {
+        const res = await apiFetch(`/api/leave/my_total_leaves`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        const data = await res.json();
+
+        setTotalLeaveRequests(data.length);
+        setApprovedLeaves(data.filter(l => l.leave_status === "Approved").length);
+        setRejectedLeaves(data.filter(l => l.leave_status === "Rejected").length);
+        setMyLeaves(data);
+    };
+
+    const fetchLeaveBalance = async () => {
+        try {
+            const res = await apiFetch(`/api/Leave/my_leave_balance`, {
+                method: 'GET',
+                credentials: 'include',
+            });
+            const data = await res.json();
+            setLeaveBalance(data);
+        } catch (err) {
+            console.error("❌ Fetch balance error:", err);
+        }
+    };
+
+    const fetchHolidays = async () => {
+        const res = await apiFetch(`/api/holiday/list?month=${month}&year=${year}`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+        const result = await res.json();
+        setHolidaysThisMonth(result);
+        // Find the next upcoming holiday
+        const today = new Date();
+        const upcomingDate = result.find(h => new Date(h.holiday_date) >= today)?.holiday_date;
+
+        const upcomingHolidays = upcomingDate
+            ? result.filter(h => h.holiday_date === upcomingDate)
+            : [];
+
+        setNextHoliday(upcomingHolidays);
+    };
+
     const openModal = (type) => {
         let filtered = [];
 
@@ -67,55 +117,6 @@ const LeaveDashboard = ({ navSize }) => {
         return new Date(d).toISOString().split("T")[0];
     };
 
-    const fetchCounts = async () => {
-        const empId = localStorage.getItem("emp_id");
-        const res = await apiFetch(`/api/leave/my_total_leaves/${empId}`);
-        const data = await res.json();
-
-        setTotalLeaveRequests(data.length);
-        setApprovedLeaves(data.filter(l => l.leave_status === "Approved").length);
-        setRejectedLeaves(data.filter(l => l.leave_status === "Rejected").length);
-        setMyLeaves(data);
-    };
-
-    const fetchLeaveBalance = async () => {
-        try {
-            const empId = localStorage.getItem("emp_id");
-            const res = await apiFetch(`/api/Leave/my_leave_balance/${empId}`);
-            const data = await res.json();
-            setLeaveBalance(data);
-        } catch (err) {
-            console.error("❌ Fetch balance error:", err);
-        }
-    };
-
-    useEffect(() => {
-        fetchCounts();
-        fetchHolidays();
-        fetchLeaveBalance();
-    }, []);
-
-    const fetchHolidays = async () => {
-        const empId = localStorage.getItem("emp_id");
-        const res = await apiFetch(`/api/holiday/list?month=${month}&year=${year}&emp_id=${empId}`);
-        const result = await res.json();
-        setHolidaysThisMonth(result);
-        // Find the next upcoming holiday
-        const today = new Date();
-        const upcomingDate = result.find(h => new Date(h.holiday_date) >= today)?.holiday_date;
-
-        const upcomingHolidays = upcomingDate
-            ? result.filter(h => h.holiday_date === upcomingDate)
-            : [];
-
-        setNextHoliday(upcomingHolidays);
-    };
-
-    useEffect(() => {
-        fetchCounts();
-        fetchHolidays();
-    }, []);
-
     return (
         <div className="leave-dashboard-container">
             <div className={`leave-dashboard ${navSize}`}>
@@ -137,9 +138,9 @@ const LeaveDashboard = ({ navSize }) => {
                     </div>
 
                     {showModal && (
-                        <div className="modal-overlay">
-                            <div className="modal-box">
-                                <div className="modal-header">
+                        <div className="leave-dashboard-modal-overlay">
+                            <div className="leave-dashboard-modal-box">
+                                <div className="leave-dashboard-modal-header">
                                     <h2>{modalTitle}</h2>
                                     <FaTimes
                                         className="close-btn"
@@ -147,7 +148,7 @@ const LeaveDashboard = ({ navSize }) => {
                                     />
                                 </div>
 
-                                <table className="modal-table">
+                                <table className="leave-dashboard-modal-table">
                                     <thead>
                                         <tr>
                                             <th>Leave ID</th>

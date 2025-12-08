@@ -1,13 +1,13 @@
 require("dotenv").config();
 const express = require("express");
-const getDBConnection = require("../../config/db");
+const { verifyJWT } = require('./Login_server');
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const nodemailer = require("nodemailer");
 const cron = require("node-cron");
-
 const router = express.Router();
+const getDBConnection = require("../../config/db");
 const db = getDBConnection("dTime");
 
 // 🔹 Mail Transporter (Zoho)
@@ -38,12 +38,12 @@ router.get("/leave_type_list", (req, res) => {
 });
 
 // ✅ Get leave requests only for a specific employee
-router.get("/my_leave_request_list/:empId", (req, res) => {
-    const { empId } = req.params;
-
-    if (!empId) {
-        return res.status(400).json({ error: "emp_id is required" });
+router.get("/my_leave_request_list", verifyJWT, (req, res) => {
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
     }
+
+    const empId = req.emp_id;
 
     const query = `
         SELECT lr.*, lt.leave_type 
@@ -74,9 +74,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // ✅ Add Leave Request + Notify
-router.post("/add_my_leave_request", upload.single("attachment"), (req, res) => {
+router.post("/add_my_leave_request", upload.single("attachment"), verifyJWT, (req, res) => {
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    const emp_id = req.emp_id;
+
     const {
-        emp_id,
         leave_type_id,
         start_date,
         start_date_breakdown,
@@ -282,6 +287,7 @@ const notifyApprover = (approverId, emp_id, leave_requests_id, stage) => {
                     <h3 style="color: #4A90E2;">${stage}</h3>
                     <p>Dear ${approver_name},</p>
                     <p>The leave request for <strong>${emp_name}</strong> is still pending approval.</p>
+                    <p>Leave request Id <strong>${leave_requests_id}</strong></p>
                     <p>Please review it at your earliest convenience.</p>
                     <p style="color:#888;">- dTime System</p>
                 </div>
@@ -321,10 +327,14 @@ const autoApproveLeave = (leave_requests_id, emp_id) => {
 };
 
 // ✅ Update request (safe and clean)
-router.put("/update_my_leave_request/:id", upload.single("attachment"), (req, res) => {
+router.put("/update_my_leave_request/:id", upload.single("attachment"), verifyJWT, (req, res) => {
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    const emp_id = req.emp_id;
     const { id } = req.params;
     const {
-        emp_id,
         leave_type_id,
         start_date,
         start_date_breakdown,
@@ -392,8 +402,13 @@ router.put("/update_my_leave_request/:id", upload.single("attachment"), (req, re
 
 // ✅ Cancel leave request (just update status)
 router.put("/cancel_my_leave_request/:id", (req, res) => {
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    const canceled_by = req.emp_id;
+
     const { id } = req.params;
-    const { canceled_by } = req.body;
 
     if (!canceled_by || canceled_by === "null" || canceled_by === "undefined") {
         return res.status(400).json({ success: false, message: "Employee ID is required" });
@@ -455,8 +470,12 @@ router.delete("/delete_my_leave_request/:id", (req, res) => {
 });
 
 // ✅ Get Leave Balance
-router.get("/my_leave_balance/:emp_id", (req, res) => {
-    const { emp_id } = req.params;
+router.get("/my_leave_balance", verifyJWT, (req, res) => {
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    const emp_id = req.emp_id;
 
     const query = `
         SELECT 
@@ -490,8 +509,12 @@ router.get("/my_leave_balance/:emp_id", (req, res) => {
 });
 
 // ✅ Get Leave History
-router.get("/my_leave_history/:emp_id", (req, res) => {
-    const { emp_id } = req.params;
+router.get("/my_leave_history", verifyJWT, (req, res) => {
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    const emp_id = req.emp_id;
 
     const query = `
         SELECT 
@@ -513,8 +536,12 @@ router.get("/my_leave_history/:emp_id", (req, res) => {
 });
 
 // ✅ Get approval info for employee
-router.get("/leave_approver/:emp_id", (req, res) => {
-    const { emp_id } = req.params;
+router.get("/leave_approver", verifyJWT, (req, res) => {
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    const emp_id = req.emp_id;
 
     if (!emp_id || emp_id === "null" || emp_id === "undefined") {
         return res.status(400).json({ success: false, message: "Employee ID is required" });
@@ -573,8 +600,12 @@ router.get("/leave_approver/:emp_id", (req, res) => {
 });
 
 // ✅ Get all leave requests
-router.post("/leave_requests_list_filtered", (req, res) => {
-    const { emp_id } = req.body;
+router.post("/leave_requests_list_filtered", verifyJWT, (req, res) => {
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    const emp_id = req.emp_id;
 
     if (!emp_id) {
         return res.status(400).json({ error: "emp_id required" });
@@ -643,7 +674,13 @@ router.post("/leave_requests_list_filtered", (req, res) => {
 
 router.put("/update_status/:id", (req, res) => {
     const { id } = req.params;
-    const { status, reason, updated_by } = req.body;
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    const updated_by = req.emp_id;
+
+    const { status, reason } = req.body;
 
     const query = `
         UPDATE leave_requests
@@ -664,8 +701,12 @@ router.put("/update_status/:id", (req, res) => {
 });
 
 // Get Total Leaves (for dashboard table)
-router.get("/my_total_leaves/:emp_id", (req, res) => {
-    const { emp_id } = req.params;
+router.get("/my_total_leaves", verifyJWT, (req, res) => {
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
+
+    const emp_id = req.emp_id;
 
     const query = `
         SELECT 

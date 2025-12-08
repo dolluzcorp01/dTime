@@ -1,14 +1,18 @@
 require("dotenv").config();
 const express = require("express");
 const getDBConnection = require('../../config/db');
+const { verifyJWT } = require("./Login_server");
 const router = express.Router();
 
 const db = getDBConnection('dTime'); // ✅ Connect to dTime DB
 
 // 🔹 Get Punch History for an Employee
-router.get("/history/:emp_id", (req, res) => {
-    const { emp_id } = req.params;
+router.get("/history", verifyJWT, (req, res) => {
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
 
+    const emp_id = req.emp_id;
     const query = `
     SELECT punch_in, punch_out 
     FROM punch_history 
@@ -26,9 +30,12 @@ router.get("/history/:emp_id", (req, res) => {
 });
 
 // 🔹 Punch In (Insert Record)
-router.post("/punch-in", (req, res) => {
-    const { emp_id } = req.body;
+router.post("/punch-in", verifyJWT, (req, res) => {
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
 
+    const emp_id = req.emp_id;
     const query = `
     INSERT INTO punch_history (emp_id, punch_in)
     VALUES (?, NOW())
@@ -44,9 +51,12 @@ router.post("/punch-in", (req, res) => {
 });
 
 // 🔹 Punch Out (Update the latest record which has no punch_out)
-router.post("/punch-out", (req, res) => {
-    const { emp_id } = req.body;
+router.post("/punch-out", verifyJWT, (req, res) => {
+    if (!req.emp_id) {
+        return res.status(401).json({ error: 'Unauthorized access' });
+    }
 
+    const emp_id = req.emp_id;
     const query = `
     UPDATE punch_history 
     SET punch_out = NOW()
