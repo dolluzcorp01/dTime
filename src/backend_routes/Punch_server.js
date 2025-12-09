@@ -4,7 +4,7 @@ const getDBConnection = require('../../config/db');
 const { verifyJWT } = require("./Login_server");
 const router = express.Router();
 
-const db = getDBConnection('dTime'); // ✅ Connect to dTime DB
+const db = getDBConnection('dtime'); // ✅ Connect to dTime DB
 
 // 🔹 Get Punch History for an Employee
 router.get("/history", verifyJWT, (req, res) => {

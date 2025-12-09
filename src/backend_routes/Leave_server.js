@@ -8,7 +8,7 @@ const nodemailer = require("nodemailer");
 const cron = require("node-cron");
 const router = express.Router();
 const getDBConnection = require("../../config/db");
-const db = getDBConnection("dTime");
+const db = getDBConnection("dtime");
 
 // 🔹 Mail Transporter (Zoho)
 const transporter = nodemailer.createTransport({

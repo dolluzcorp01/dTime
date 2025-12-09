@@ -4,7 +4,7 @@ const { verifyJWT } = require('./Login_server');
 const getDBConnection = require('../../config/db');
 const router = express.Router();
 
-const db = getDBConnection('dTime'); // ✅ Connect to dTime DB
+const db = getDBConnection('dtime'); // ✅ Connect to dTime DB
 
 // ✅ Get Holidays for the month
 router.get("/list", verifyJWT, (req, res) => {
