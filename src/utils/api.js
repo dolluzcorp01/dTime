@@ -7,7 +7,7 @@ export const API_BASE =
 export const EMP_PROFILE_FILE_BASE =
     process.env.NODE_ENV === "production"
         ? process.env.REACT_APP_EMP_PROFILE_FILE
-        : "http://localhost:4003";
+        : "http://localhost:4002";
 
 export async function apiFetch(endpoint, options = {}) {
     return fetch(`${API_BASE}${endpoint}`, {
