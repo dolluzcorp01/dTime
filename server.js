@@ -40,12 +40,14 @@ const EmployeeRoutes = require('./src/backend_routes/Employee_server');
 const PunchRoutes = require('./src/backend_routes/Punch_server');
 const HolidayRoutes = require('./src/backend_routes/Holiday_server');
 const LeaveRoutes = require('./src/backend_routes/Leave_server');
+const ProjectConfigurationRoutes = require('./src/backend_routes/Project_configuration_server');
 
 app.use("/api/login", LoginRoutes.router);
 app.use("/api/employee", EmployeeRoutes);
 app.use("/api/punch", PunchRoutes);
 app.use("/api/holiday", HolidayRoutes);
 app.use("/api/Leave", LeaveRoutes);
+app.use("/api/Project_configuration", ProjectConfigurationRoutes);
 
 // Serve uploaded files if needed
 app.use('/leave_attachments', express.static(path.join(__dirname, 'leave_attachments')));

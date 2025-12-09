@@ -20,7 +20,7 @@ const Timesheet_entry = ({ navSize }) => {
     // 🔹 Fetch all projects
     const fetchProjects = async () => {
         try {
-            const res = await apiFetch("/api/Configuration/all", {
+            const res = await apiFetch("/api/Project_configuration/all", {
                 method: 'GET',
                 credentials: 'include',
             });
@@ -35,7 +35,7 @@ const Timesheet_entry = ({ navSize }) => {
     const fetchTasks = async (project_id) => {
         setSelectedProject(project_id);
         try {
-            const res = await apiFetch(`/api/Configuration/tasks/${project_id}`, {
+            const res = await apiFetch(`/api/Project_configuration/tasks/${project_id}`, {
                 method: 'GET',
                 credentials: 'include',
             });
