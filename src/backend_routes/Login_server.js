@@ -10,7 +10,8 @@ const db = getDBConnection("dadmin");
 // 🔹 Middleware to verify JWT
 const JWT_SECRET = process.env.JWT_SECRET;
 const verifyJWT = (req, res, next) => {
-    const token = req.cookies?.token;
+    const token = req.cookies.dTime_token || req.cookies.dolluzcorp_token;
+
     if (!token) {
         return res.status(403).json({ message: 'Access Denied. No Token Provided!' });
     }
@@ -25,10 +26,12 @@ const verifyJWT = (req, res, next) => {
 
 // 🔹 LOGOUT the JWT
 router.post("/logout", (req, res) => {
-    res.clearCookie("token", {
+    const isProd = process.env.NODE_ENV === "production";
+    res.clearCookie("dTime_token", {
         httpOnly: true,
-        secure: true,
-        sameSite: "None"
+        secure: isProd,
+        sameSite: isProd ? "None" : "Lax",
+        domain: isProd ? ".dtime.dolluzcorp.in" : undefined,
     });
 
     return res.json({ success: true, message: "Logged out successfully" });
@@ -66,7 +69,14 @@ router.post("/Verifylogin", (req, res) => {
 
         // 🔹 CREATE JWT TOKEN
         const token = jwt.sign({ emp_id: employee.emp_id }, JWT_SECRET);
-        res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'None' });
+        const isProd = process.env.NODE_ENV === "production";
+
+        res.cookie("dTime_token", token, {
+            httpOnly: true,
+            secure: isProd,
+            sameSite: isProd ? "None" : "Lax",
+            domain: isProd ? ".dtime.dolluzcorp.in" : undefined,
+        });
 
         return res.json({
             success: true,
